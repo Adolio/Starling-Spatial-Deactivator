@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Spatial Deactivator (Starling, AS3)</title>
+		<meta charset="UTF-8">
+		<meta name="description" content="Demo of the Spatial Deactivator extension for the Starling Framework.">
+		<meta name="keywords" content="Starling,AS3,Flash,Adobe,AIR,Game,Game Development,gamedev,Looking for Imago">
+		<meta name="author" content="Aurélien Da Campo">
+		
+		<script type="text/javascript" src="swfobject/swfobject.js"></script>
+		<script type="text/javascript">
+			var flashvars = {};
+			var params = {};
+			params.wmode = "direct";
+			var attributes = {};
+			swfobject.embedSWF("Starling-Spatial-Deactivator.swf", "demo", "800", "480", "25.0.0", "swfobject/expressInstall.swf", flashvars, params, attributes);
+		</script>
+		
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+		
+		<style>
+		
+			* {
+				font-family: 'Open Sans', sans-serif;
+				color: #636363;
+			}
+		
+			body {
+				background-color: #ffffff;
+				text-align: justify;
+			}
+			
+			h1 {
+				color: #3C8637;
+			}
+			
+			h2 {
+				color: #3C8637;
+				font-size: 120%;
+				font-weight: normal;
+				border-bottom: solid 1px #999;
+				margin-top: 0;
+			}
+			
+			h3 {
+				color: #3C8637;
+				//font-size: 120%;
+				font-style: italic;
+				font-weight: normal;
+				//border-bottom: solid 1px #999;
+			}
+			
+			p {
+				margin-left: 24px;
+			}
+			
+			ul {
+				margin-left: 24px;
+				list-style-type: square;
+			}
+			
+			a:link {
+				color: #3C8637;
+			}
+			
+			a:visited {
+				color: #3C8637;
+			}
+			
+			a:hover {
+				color: #3C8637;
+			}
+			
+			a:active {
+				color: #3C8637;
+			}
+			
+			#container {
+				width: 900px;
+				margin-left: auto;
+				margin-right: auto;
+				
+				background-color: #f8f8f8;
+				padding: 16px 32px 16px 32px;
+				border: solid 1px #FFFFFF;
+				box-shadow: 2px 2px 10px #BBBBBB;
+				border-radius: 4px;
+			}
+			
+			#header {
+				
+			}
+			
+			#author 
+			{
+				color: #999999;
+				font-size: 70%;
+				text-align: right;
+				font-style: italic;
+			}
+			
+			#demo {
+				text-align: center;
+			}
+			
+			#legend {
+				padding-bottom: 20px;
+			}
+			
+			#footer {
+				color: #999999;
+				font-size: 70%;
+				text-align: center;
+				font-style: italic;
+			}
+			
+			#demo-container {
+				padding: 8px;
+				box-shadow: 1px 1px 5px #BBBBBB;
+				border-radius: 4px;
+			}
+			
+			.box {
+				margin: 16px;
+				padding: 25px 25px 25px 25px;
+				background-color: #FFFFFF;
+				border: solid 1px #FFFFFF;
+				box-shadow: 1px 1px 8px #BBBBBB;
+				border-radius: 4px;
+			}
+			
+			.pic {
+				padding:10px;
+				box-shadow: 1px 1px 5px #BBBBBB;
+				border-radius: 4px;
+			}
+			
+			.keyword {
+				color: #3C8637;
+				font-style: italic;
+			}
+			
+		</style>
+		
+	</head>
+	<body>
+	
+		<a href="https://github.com/Adolio/Starling-Spatial-Deactivator" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+	
+		<div id="container">
+	
+		<div id="header" class="box">
+			<h1>Spatial Deactivator for AS3 / Starling</h1>
+			<p>An AS3 / Starling module to handle automatic spatial game objects activation & deactivation.</p>
+			<p id="author">By <a href="https://twitter.com/AurelienDaCampo" target="_blank">Aurélien Da Campo</a>, June 2017</p>
+		</div>
+		<div class="box">
+			<h2>Demo</h2>
+			<div id="demo-container">
+				<div id="demo">
+					<p>Alternative content</p>
+					<p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
+				</div>
+			</div>
+			<p>
+				This interactive demo shows the library running in <span class="keyword">debug mode</span>. The scene is mainly composed by:
+			</p>
+			<p>
+				<ul>
+					<li>A central big white quad which represents the current <span class="keyword">active area</span>, usually the camera view.</li>
+					<li>The 1024 little quads all around are <span class="keyword">spatial elements</span> or game objects.</li>
+					<li>Green cells represent <span class="keyword">spatial chunks</span>, they are used internally to create spatial separations.</li>
+				</ul>
+			</p>
+		</div>
+		<div class="box">
+			<h2>How does it work?</h2>
+			<p>
+				Basically, a <span class="keyword">spatial chunk</span> (or cell) is active when it touches directly the <span class="keyword">active area</span>.
+				When a <span class="keyword">spatial element</span> (or game object) touches an active <span class="keyword">spatial chunk</span>, it becomes active and transfers its activity to all the other touched <span class="keyword">spatial chunks</span>.
+				<span class="keyword">Spatial elements</span> are then sort of activity bridges over <span class="keyword">spatial chunks</span>.
+				Through this <span class="keyword">activity propagation</span> mechanism, recursively, all <span class="keyword">spatial elements</span> which could potentially interact with each other are therefore woke up.
+			</p>
+		</div>
+		<div class="box">
+			<h2>How to use it?</h2>
+			<p>
+				The source code and the implementation details are available on <a href="https://github.com/Adolio/Starling-Spatial-Deactivator" target="_blank">GitHub</a>.
+			</p>
+		</div>
+		<div class="box">
+			<h2>Why using a such mechanism?</h2>
+			<p>
+				This module is meant to be used for optimization reasons when a lot of living game objects are out of you camera field of view.
+			</p>
+			<h3>Initial approach</h3>
+			<p>
+				My first approach to solve this optimization topic was simply to check whenever an object has moved if it's still colliding the active area - if it doesn't, it obviously needs to be deactivated.
+			</p>
+			<p>
+				Then a problem arised sometimes when objects could have a spatial depency between each other.
+				For instance, the consistency of the simulation could be easily broken if an object which support another suddenly becomes inactive.
+			</p>
+			<p>	
+				The following picture illustrates that problem when using the above simple solution with dynamic objects simulated by a physics engine.
+				Both objects (A & B) are solid. <span class="keyword">Object B</span> is dynamic (subjects to gravity) and it is currently supported by <span class="keyword">object A</span>.
+				When <span class="keyword">object A</span> leaves the active area, it is deactivated and <span class="keyword">object B</span> will unwantedly fall down.
+			</p>
+			<p>
+				<a href="images/Spatial-Deactivator-Object-Dependency-Issue.png" target="_blank"><img class="pic" src="images/Spatial-Deactivator-Object-Dependency-Issue.png" width="90%"></a>
+			</p>
+			<h3>Proposed approach</h3>
+			<p>
+				The proposed implementation solves the above issue by using <span class="keyword">spatial chunks</span> and an <span class="keyword">activity propagation</span> mechanism:
+			</p>
+			<p>
+				<a href="images/Spatial-Deactivator-Object-Dependency.png" target="_blank"><img class="pic" src="images/Spatial-Deactivator-Object-Dependency.png" width="90%"></a>
+			</p>
+			<p>
+				As detailed previously, here is the sequence of the <span class="keyword">activation propagation</span> from the <span class="keyword">active area</span> to the <span class="keyword">object A</span>:
+				<ul>
+					<li>First the <span class="keyword">active area</span> will activate the colliding chunks: <span class="keyword">C00 chunk</span> & <span class="keyword">C01 chunk</span>.</li>
+					<li><span class="keyword">C00 chunk</span> will then activate inactive touching objects: <span class="keyword">Object B</span>.</li>
+					<li><span class="keyword">Object B</span> will then activate inactive touching chunks: <span class="keyword">C10 chunk</span>.</li>
+					<li><span class="keyword">C10 chunk</span> will then activate inactive touching objects: <span class="keyword">Object A</span>.</li>
+					<li><span class="keyword">Object A</span> will then activate inactive touching chunks: <span class="keyword">C11 chunk</span>.</li>
+				</ul>
+			</p>
+			<p>
+				Another benefit of using predefined orthonormed grid is the fact that it requires almost no cost to find the cells in which an object is part of (when using <span class="keyword">AABB</span>, Axis-Aligned Bounding Box).
+				And no need to parse all existing game objects to check the boundaries.
+				However, each time an object moves, it needs to be registered / unregistered when it respectively enters / leaves chunks.
+			</p>
+			<p>
+				<span class="keyword">
+					Note: I don't claim at all that this approach is the best one but it works pretty well for my needs in the context of 2D side-scrolling platform game (see below) and I'm happy to share it to people that could benefits from it.
+					If you have any improvement to propose, please feel free share your thoughts on the <a href="https://forum.starling-framework.org/">Starling Forum</a>.
+				</span>
+			</p>
+			<h3>Other approaches</h3>
+			<p>
+				In physics engines, special data structures (<a href="https://en.wikipedia.org/wiki/Bounding_volume_hierarchy" target="_blank">Bounding Volume Hierarchy (BVH)</a>) are commonly used 
+				to detect pair-collision or to achieve efficient ray tracing.
+			</p>
+			<p>
+				I will perhaps study those data structures for the future version of the library to see if they are suitable for this particular use case.
+			</p>
+		</div>
+		<div class="box">
+			<h2>Where it is used?</h2>
+			<p>
+				This library has been used in <a href="http://looking-for-imago.com/">Looking for Imago</a>, a 2D side-scrolling platform game I'm currently developing in my free time. 
+				In that game, this module helps to improve the overall performance by activating & deactivating several aspects (physics, graphics, logic & sounds) of game objects that are outside of the camera field view.
+			</p>
+			<p>
+				Here are two pictures that show the library in action:
+			</p>
+			<table>
+				<tr>
+					<td align="center">
+						<a href="images/Spatial-Deactivator-Off.png" target="_blank"><img class="pic" src="images/Spatial-Deactivator-Off.png" width="90%"></a>
+					</td>
+					<td align="center">
+						<a href="images/Spatial-Deactivator-On.png" target="_blank"><img class="pic" src="images/Spatial-Deactivator-On.png" width="90%"></a>
+					</td>
+				</tr>
+				<tr>
+					<td align="center">Debug mode <span class="keyword">off</span></td>
+					<td align="center">Debug mode <span class="keyword">on</span></td>
+				</tr>
+			</table>
+			<p>
+				As you can see, for optimization reasons, the static <span class="keyword">spatial elements</span> (ground blocks) have been divided in multiple parts in order to avoid several overlaps with the <span class="keyword">spatial chunks</span>.
+				This little trick helps to avoid activity transfer by the ground blocks which could wakes up plenty of <span class="keyword">spatial chunks</span> by overlapping them.
+			</p>
+			<p>	
+				In a future version of the library, a new <span class="keyword">isStatic</span> flag will be introduced specifically to inhibit activity transfer for static <span class="keyword">spatial elements</span>.
+			</p>
+		</div>
+		<div class="box">
+			<h2>Missing features and/or known issues</h2>
+			<ul>
+				<li>Optimization for static game objects is not done yet (the above <span class="keyword">isStatic</span> flag).</li>
+				<li>Only one and unique <span class="keyword">active area</span> is possible for the moment. Multiple <span class="keyword">active areas</span> could be useful for multiplayer games.</li>
+				<li>Source code could certainly be optimized or improved if someone wants to review it.</li>
+				<li>Collisions filtering (mask) could also bring something interesting for some cases.</li>
+				<li>The library can easily be generalized to AS3 (by using a sort of debug factory system) because <span class="keyword">Starling</span> is mainly required for debugging purposes.</li>
+				<li>Automatic chunks cleaning when no elements are in contact is still missing.</li>
+				<li>
+					It would be nice to compare this solution with a <a href="https://en.wikipedia.org/wiki/Bounding_volume_hierarchy" target="_blank">Dynamic AABB Tree</a> solution commonly used in physics engines' broad phases.
+					If you are curious, here is an <a href="https://github.com/azrafe7/as3AABBTree" target="_blank">AS3 Dynamic AABB Tree</a> implementation...
+				</li>
+			</ul>
+		</div>
+		<div id="footer" class="box">
+			Copyright 2017 Aurélien Da Campo. All rights reserved.
+		</div>
+		</div>
+	</body>
+</html>
