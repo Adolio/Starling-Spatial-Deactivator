@@ -6,10 +6,10 @@ This Starling extension is an approach to solve 2D spatial activation / deactiva
 You will be able to basically do what you want with a game object when it is considered as active or inactive.
 
 This library could be useful for you if:	
-- Your game objects could leave a defined active area (camera view for instance) and therefore needs to be deactivated.
+- Your game objects could leave a defined active area (camera view for instance) and therefore they need to be deactivated.
 - Your game objects could interact with each other and you need to make sure that colliding game objects are "safely" deactivated.
 
-For further details about the implementation, please have a look to the [demo page](http://adolio.ch/projects/Starling-Spatial-Deactivator).
+For further details about the implementation, please have a look at the [demo page](http://adolio.ch/projects/Starling-Spatial-Deactivator).
 
 ## ▶️ Live demo
 
@@ -39,7 +39,7 @@ public function update():void
 	_activeAreaAABB.width = ...; // Your complex stuff here
 	_activeAreaAABB.height = ...; // Your complex stuff here
 	
-	// TODO Update only if AABB has changed!
+	// IMPORTANT TIP: Update only if AABB has changed!
 	_deactivator.updateActiveArea(_activeAreaAABB);
 }
 
@@ -70,7 +70,7 @@ public function update():void
 	width = ...; // Your complex stuff here
 	height = ...; // Your complex stuff here
 	
-	// TODO Update only if AABB has changed!
+	// IMPORTANT TIP: Update only if AABB has changed!
 	_spatialElement.updateAABB(x, y, width, height);
 }
 
@@ -98,19 +98,19 @@ if(_deactivator.debugSprite)
 
 ## ⌨️ How to install?
 
-Just clone or download the repository and copy/paste the ```src/ch``` folder into your ```src``` directory or add the ```src/``` to your class path.
+Just clone or download the repository and copy/paste the ```src/ch``` folder into your ```src``` directory or add the ```src/``` folder to your class path.
 
 
 ## 💡 Important aspects
 
-### - Find your right chunks size
+### 1. Find your right chunks size
 
 One important point to make this tool efficient for you is to find the correct chunk size to best fit to your needs.
 
 - Too big chunks will cover too much game objects and therefore activate too much of them at the same time.
 - Too small chunks will requires a lot of chunks processing for nothing.
 
-You can test & see what's the best for you by enabling the debug mode (see bellow).
+You can test & see what's the best for you by enabling the debug mode (see 🐜 section).
 
 I personnally use a ratio of ```0.25``` compared to the active area size.
 
@@ -118,7 +118,7 @@ I personnally use a ratio of ```0.25``` compared to the active area size.
 new SpatialDeactivator(_activeAreaAABB.width * 0.25, _activeAreaAABB.height * 0.25);
 ```
 
-### - Find your right active area size
+### 2. Find your right active area size
 
 If your active area corresponds to the camera view, using margin could be useful to anticipate activation of upcoming game objects.
 
@@ -131,9 +131,10 @@ _activeAreaAABB.y = y - _margin * 0.5;
 deactivator.updateActiveArea(_activeAreaAABB);
 ```
 
-### - Find your right spatial element size
+### 3. Find your right spatial element size
 
-The size of you element could be for instance a bit bigger than your game object bounds.
+The size of a spatial element should cover the entire size of your game object to make sure that the game object doesn't become inactive too early or active too lately.
+If needed, the size of your spatial elements can be a bit bigger than your game objects bounds as well:
 
 ```
 _spatialElement.updateAABB(x - margin * 0.5, y - margin * 0.5, width + margin, height + margin);
