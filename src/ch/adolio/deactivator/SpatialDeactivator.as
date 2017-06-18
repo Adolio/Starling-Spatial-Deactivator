@@ -209,18 +209,18 @@ package ch.adolio.deactivator
 		internal function updateActiveChunksFromLastActiveArea():void
 		{
 			// Get the chunks touched by the new active area
-			var newActiveChunks:Vector.<SpatialChunk> = getChunksTouchedBy(_activeArea);
+			_activeChunks = getChunksTouchedBy(_activeArea, _activeChunks);
 			
 			// Find (recursively) all the connected chunks
-			for (var i:int = 0; i < newActiveChunks.length; ++i)
+			for (var i:int = 0; i < _activeChunks.length; ++i)
 			{
-				newActiveChunks[i].fillListWithLinkedChunks(newActiveChunks);
+				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
 			}
 			
 			// Update only the old & new chunk activity
 			for each (var chunk:SpatialChunk in _chunks)
 			{
-				var inNewActiveChunks:Boolean = newActiveChunks.indexOf(chunk) != -1;
+				var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
 				
 				// Activate chunks not yet active
 				if (inNewActiveChunks && !chunk.isActive)
@@ -235,9 +235,13 @@ package ch.adolio.deactivator
 			}
 		}
 		
-		internal function getChunksTouchedBy(aabb:Rectangle):Vector.<SpatialChunk>
+		internal function getChunksTouchedBy(aabb:Rectangle, result:Vector.<SpatialChunk> = null):Vector.<SpatialChunk>
 		{
-			var result:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
+			// Initialize resulting list of chunks
+			if (result)
+				result.length = 0;
+			else
+				result = new Vector.<SpatialChunk>();
 			
 			// Find min/max index on each axis
 			var xmin:int = Math.floor(aabb.left / _chunkWidth);

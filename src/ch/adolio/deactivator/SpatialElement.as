@@ -154,8 +154,8 @@ package ch.adolio.deactivator
 				_deactivator.debugSprite.addChild(_debugQuad); // Move on top
 			}
 			
-			// Acquire the new covered chunks
-			_newChunks = _deactivator.getChunksTouchedBy(_aabb);
+			// Acquire the new covered chunks (requires a new vector instance for later pointer assignment)
+			_newChunks = _deactivator.getChunksTouchedBy(_aabb, null);
 			
 			// Temp variables
 			var chunk:SpatialChunk;
@@ -185,7 +185,7 @@ package ch.adolio.deactivator
 				}
 			}
 			
-			// New chunks become covered chunks
+			// New chunks become covered chunks (pointer assignment)
 			_coveredChunks = _newChunks;
 			
 			// Enter a new chunk but did not left another
