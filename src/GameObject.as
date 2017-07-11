@@ -38,17 +38,19 @@ package
 		private var _angularSpeed:Number = 0;
 		private var _enableTeleportation:Boolean = false;
 		private var _teleportCooldown:Number = 0;
+		private var _isStatic:Boolean;
 		
-		public function GameObject(x:Number, y:Number, width:Number, height:Number, deactivator:SpatialDeactivator)
+		public function GameObject(x:Number, y:Number, width:Number, height:Number, deactivator:SpatialDeactivator, isStatic:Boolean)
 		{
 			_ix = x;
 			_iy = y;
 			_iw = width;
 			_ih = height;
+			_isStatic = isStatic;
 			
 			// Setup graphics
-			_quad = new Quad(width, height, 0xffffff);
-			_quad.alpha = 0.5;
+			_quad = new Quad(width, height, isStatic ? 0x269AD9 : 0xffffff);
+			_quad.alpha = 0.8;
 			addChild(_quad);
 			
 			// Setup behavior
@@ -57,8 +59,8 @@ package
 			_mouvementRadius = Math.random() * 100;
 			_angularSpeed = ((Math.random() - 0.5) * 2) * 0.3;
 			
-			// Setup spatial element
-			_spatialElement = new SpatialElement(deactivator, false);
+			// Setup spatial element (static objects do not transfer activity over spatial chunks)
+			_spatialElement = new SpatialElement(deactivator, false, !_isStatic);
 			_spatialElement.activityChangedCallback = onSpatialElementActivityChanged;
 			isActive = _spatialElement.isActive;
 			
@@ -77,7 +79,8 @@ package
 				_elaspedTime = 0;
 			}
 			
-			updatePosition();
+			if(!_isStatic)
+				updatePosition();
 		}
 		
 		private function updatePosition():void

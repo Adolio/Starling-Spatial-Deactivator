@@ -29,7 +29,7 @@ package ch.adolio.deactivator
 		
 		// Debug mode
 		private var _debugQuad:Quad;
-		private static const _COLOR:uint = 0x00ff00;
+		private static const _COLOR:uint = 0x33D022;
 		private static const _ACTIVE_ALPHA:Number = 0.4;
 		private static const _INACTIVE_ALPHA:Number = 0.1;
 		
@@ -67,39 +67,38 @@ package ch.adolio.deactivator
 			_elements = null;
 		}
 		
-		internal function activate(forceElementsUpdate:Boolean, propagate:Boolean):void
+		internal function activate(propagate:Boolean):void
 		{
 			if (_isActive)
 				return;
 			
 			_isActive = true;
 			
+			// Update debug rendering
 			if(_debugQuad)
 				_debugQuad.alpha = _ACTIVE_ALPHA; // Graphics debug
 			
-			if (forceElementsUpdate)
-			{
-				var elementsCount:Number = _elements.length;
-				for (var i:uint = 0; i < elementsCount; ++i)
-					_elements[i].activate(propagate); // Do not check chunks activity
-			}
+			// Update touched elements
+			var elementsCount:Number = _elements.length;
+			for (var i:uint = 0; i < elementsCount; ++i)
+				_elements[i].activate(propagate);
 		}
 		
-		internal function deactivate(forceElementsUpdate:Boolean, propagate:Boolean):void
+		internal function deactivate(propagate:Boolean):void
 		{
 			if (!_isActive)
 				return;
 			
 			_isActive = false;
 			
+			// Update debug rendering
 			if(_debugQuad)
 				_debugQuad.alpha = _INACTIVE_ALPHA; // Graphics debug
 			
-			if (forceElementsUpdate)
-			{
-				var elementsCount:Number = _elements.length;
-				for (var i:uint = 0; i < elementsCount; ++i)
-					_elements[i].deactivate(propagate); // Do not check chunks activity
+			// Update touched elements
+			var elementsCount:Number = _elements.length;
+			for (var i:uint = 0; i < elementsCount; ++i) {
+				_elements[i].checkActivityFromCoveredChunks(propagate);
 			}
 		}
 		
@@ -132,11 +131,15 @@ package ch.adolio.deactivator
 		{
 			if (_elements.indexOf(value) == -1)
 				_elements.push(value);
+			
+			// TODO Add param to force check activity (if not active, now active?).
 		}
 		
 		internal function removeElement(value:SpatialElement):void
 		{
 			_elements.removeAt(_elements.indexOf(value));
+			
+			// TODO Add param to force check activity (if active, still active?).
 		}
 		
 		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void

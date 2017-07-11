@@ -225,12 +225,12 @@ package ch.adolio.deactivator
 				// Activate chunks not yet active
 				if (inNewActiveChunks && !chunk.isActive)
 				{
-					chunk.activate(true, false); // force elements to be active too
+					chunk.activate(false);
 				}
 				// Deactivate chunks not anymore active
 				else if (!inNewActiveChunks && chunk.isActive)
 				{
-					chunk.deactivate(true, false); // force elements to be inactive too
+					chunk.deactivate(false);
 				}
 			}
 		}

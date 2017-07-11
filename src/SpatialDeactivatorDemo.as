@@ -10,8 +10,8 @@
 
 package
 {
-	import flash.geom.Rectangle;
 	import ch.adolio.deactivator.SpatialDeactivator;
+	import flash.geom.Rectangle;
 	import starling.core.Starling;
 	import starling.display.Quad;
 	import starling.display.Sprite;
@@ -44,21 +44,46 @@ package
 			if(_deactivator.debugSprite)
 				addChild(_deactivator.debugSprite);
 			
-			// Create objects
-			for (var i:uint = 0; i < 1024; ++i)
+			// Create game objects
+			var go:GameObject;
+			var i:uint;
+			
+			// Create static game objects
+			for (i = 0; i < 128; ++i)
 			{
-				var go:GameObject = new GameObject(
+				go = new GameObject(
 					Math.random() * Starling.current.stage.stageWidth,
 					Math.random() * Starling.current.stage.stageHeight,
-					2 + Math.random() * 8,
-					2 + Math.random() * 8,
-					_deactivator
+					8 + Math.random() * 32,
+					8 + Math.random() * 32,
+					_deactivator,
+					true
 				);
 				
 				// Add game object graphics only when debug mode is off
 				if(!_deactivator.debugSprite)
 					addChild(go);
-					
+				
+				_objects.push(go);
+			}
+			
+			// Create moving game objects
+			for (i = 0; i < 512; ++i)
+			{	
+				// Create dynamic game object
+				go = new GameObject(
+					Math.random() * Starling.current.stage.stageWidth,
+					Math.random() * Starling.current.stage.stageHeight,
+					2 + Math.random() * 8,
+					2 + Math.random() * 8,
+					_deactivator,
+					false
+				);
+				
+				// Add game object graphics only when debug mode is off
+				if(!_deactivator.debugSprite)
+					addChild(go);
+				
 				_objects.push(go);
 			}
 			
