@@ -10,6 +10,8 @@
 
 package ch.adolio.deactivator
 {
+	import ch.adolio.deactivator.SpatialChunkDebugObject;
+	import starling.display.DisplayObject;
 	import starling.display.Quad;
 	
 	/**
@@ -28,10 +30,7 @@ package ch.adolio.deactivator
 		private var _elements:Vector.<SpatialElement> = new Vector.<SpatialElement>();
 		
 		// Debug mode
-		private var _debugQuad:Quad;
-		private static const _COLOR:uint = 0x33D022;
-		private static const _ACTIVE_ALPHA:Number = 0.4;
-		private static const _INACTIVE_ALPHA:Number = 0.1;
+		private var _debugObject:SpatialChunkDebugObject;
 		
 		public function SpatialChunk(deactivator:SpatialDeactivator, gridX:int, gridY:int, debugRendering:Boolean = false)
 		{
@@ -40,12 +39,11 @@ package ch.adolio.deactivator
 			
 			// Debug mode
 			if (debugRendering) {
-				var marginX:Number = 2.0;
-				var marginY:Number = 2.0;
-				_debugQuad = new Quad(deactivator.chunkWidth - marginX, deactivator.chunkHeight - marginY, _COLOR);
-				_debugQuad.alpha = _INACTIVE_ALPHA;
-				_debugQuad.x = gridX * deactivator.chunkWidth + marginX * 0.5;
-				_debugQuad.y = gridY * deactivator.chunkHeight + marginY * 0.5;
+				var marginX:Number = 1.0;
+				var marginY:Number = 1.0;
+				_debugObject = new SpatialChunkDebugObject(deactivator.chunkWidth - marginX, deactivator.chunkHeight - marginY, this);
+				_debugObject.x = gridX * deactivator.chunkWidth + marginX * 0.5;
+				_debugObject.y = gridY * deactivator.chunkHeight + marginY * 0.5;
 			}
 		}
 		
@@ -56,14 +54,14 @@ package ch.adolio.deactivator
 		internal function destroy():void
 		{
 			// Remove and dispose debug quad
-			if (_debugQuad)
-				_debugQuad.removeFromParent(true);
+			if (_debugObject)
+				_debugObject.removeFromParent(true);
 			
 			// Clear elements
 			_elements.splice(0, _elements.length);
 			
 			// Nullify references
-			_debugQuad = null;
+			_debugObject = null;
 			_elements = null;
 		}
 		
@@ -75,8 +73,8 @@ package ch.adolio.deactivator
 			_isActive = true;
 			
 			// Update debug rendering
-			if(_debugQuad)
-				_debugQuad.alpha = _ACTIVE_ALPHA; // Graphics debug
+			if(_debugObject)
+				_debugObject.update();
 			
 			// Update touched elements
 			var elementsCount:Number = _elements.length;
@@ -92,8 +90,8 @@ package ch.adolio.deactivator
 			_isActive = false;
 			
 			// Update debug rendering
-			if(_debugQuad)
-				_debugQuad.alpha = _INACTIVE_ALPHA; // Graphics debug
+			if(_debugObject)
+				_debugObject.update();
 			
 			// Update touched elements
 			var elementsCount:Number = _elements.length;
@@ -112,9 +110,9 @@ package ch.adolio.deactivator
 			return _elements;
 		}
 		
-		internal function get debugQuad():Quad 
+		internal function get debugObject():DisplayObject 
 		{
-			return _debugQuad;
+			return _debugObject;
 		}
 		
 		internal function get gridX():int 

@@ -193,8 +193,8 @@ package ch.adolio.deactivator
 		{
 			var chunk:SpatialChunk = new SpatialChunk(this, chunkX, chunkY, _debugSprite != null);
 			_chunks[getChunkId(chunkX, chunkY)] = chunk;
-			if(_debugSprite && chunk.debugQuad)
-				_debugSprite.addChildAt(chunk.debugQuad, 0);
+			if(_debugSprite && chunk.debugObject)
+				_debugSprite.addChildAt(chunk.debugObject, 0);
 			return chunk;
 		}
 		

@@ -10,6 +10,7 @@
 
 package ch.adolio.deactivator
 {
+	import ch.adolio.deactivator.SpatialElementDebugObject;
 	import flash.geom.Rectangle;
 	import starling.animation.IAnimatable;
 	import starling.display.Quad;
@@ -45,14 +46,8 @@ package ch.adolio.deactivator
 		// Callback
 		private var _activityChangedCallback:Function;
 		
-		// Debug mode
-		private var _debugQuad:Quad;
-		private var _activeAlpha:Number = 0.8;
-		private var _inactiveAlpha:Number = 0.4;
-		private var _activeBridgeColor:uint = 0xffffff;
-		private var _inactiveBridgeColor:uint = 0x333333;
-		private var _activeNonBridgeColor:uint = 0x269AD9;
-		private var _inactiveNonBridgeColor:uint = 0x333333;
+		// Debug
+		private var _debugObject:SpatialElementDebugObject;
 		
 		/** 
 		 * Constructor of a Spatial Element
@@ -71,9 +66,8 @@ package ch.adolio.deactivator
 			
 			// Create debug graphics
 			if(_deactivator.debugSprite) {
-				_debugQuad = new Quad(1, 1, _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor));
-				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
-				_deactivator.debugSprite.addChild(_debugQuad);
+				_debugObject = new SpatialElementDebugObject(1, 1, this);
+				_deactivator.debugSprite.addChild(_debugObject);
 			}
 		}
 		
@@ -98,8 +92,8 @@ package ch.adolio.deactivator
 			_coveredChunks.splice(0, _coveredChunks.length);
 			
 			// Dispose graphical debug
-			if (_debugQuad)
-				_debugQuad.removeFromParent(true);
+			if (_debugObject)
+				_debugObject.removeFromParent(true);
 			
 			// Nullify references
 			_deactivator = null;
@@ -107,7 +101,7 @@ package ch.adolio.deactivator
 			_newChunks = null;
 			_coveredChunks = null;
 			activityChangedCallback = null;
-			_debugQuad = null;
+			_debugObject = null;
 		}
 		
 		public function get isActive():Boolean
@@ -173,10 +167,8 @@ package ch.adolio.deactivator
 		
 		public function updateDebugFromStatus():void 
 		{
-			if (_debugQuad) {
-				_debugQuad.color = _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor);
-				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
-			}
+			if (_debugObject)
+				_debugObject.update();
 		}
 		
 		// --------------------------------------------------------------------
@@ -204,12 +196,12 @@ package ch.adolio.deactivator
 		private function update():void
 		{
 			// Update debug graphics
-			if (_debugQuad != null) {
-				_debugQuad.x = _aabb.x;
-				_debugQuad.y = _aabb.y;
-				_debugQuad.width = _aabb.width;
-				_debugQuad.height = _aabb.height;
-				_deactivator.debugSprite.addChild(_debugQuad); // Move on top
+			if (_debugObject != null) {
+				_debugObject.x = _aabb.x;
+				_debugObject.y = _aabb.y;
+				_debugObject.width = _aabb.width;
+				_debugObject.height = _aabb.height;
+				_deactivator.debugSprite.addChild(_debugObject); // Move on top
 			}
 			
 			// Acquire the new covered chunks (requires a new vector instance for later pointer assignment)
@@ -364,10 +356,8 @@ package ch.adolio.deactivator
 			_isActive = true;
 			
 			// Update debug rendering
-			if (_debugQuad) {
-				_debugQuad.color = _isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor;
-				_debugQuad.alpha = _activeAlpha;
-			}
+			if (_debugObject)
+				_debugObject.update();
 			
 			// Only propagate activity if the object is a bridge
 			if (_isActivityBridge && propagate) {
@@ -388,10 +378,8 @@ package ch.adolio.deactivator
 			_isActive = false;
 			
 			// Update debug rendering
-			if (_debugQuad) {
-				_debugQuad.color = _isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor;
-				_debugQuad.alpha = _inactiveAlpha;
-			}
+			if (_debugObject)
+				_debugObject.update();
 			
 			if (_isActivityBridge && propagate) {
 				// TODO Implement deactivation check propagation
