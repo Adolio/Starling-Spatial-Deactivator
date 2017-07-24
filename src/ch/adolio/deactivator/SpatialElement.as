@@ -43,7 +43,7 @@ package ch.adolio.deactivator
 		private var _updateCooldown:Number = 1.0 / 10.0; // sec
 		
 		// Callback
-		public var activityChangedCallback:Function;
+		private var _activityChangedCallback:Function;
 		
 		// Debug mode
 		private var _debugQuad:Quad;
@@ -160,6 +160,16 @@ package ch.adolio.deactivator
 			}
 			
 			updateDebugFromStatus();
+		}
+		
+		public function get activityChangedCallback():Function 
+		{
+			return _activityChangedCallback;
+		}
+		
+		public function set activityChangedCallback(value:Function):void 
+		{
+			_activityChangedCallback = value;
 		}
 		
 		public function updateDebugFromStatus():void 
@@ -367,8 +377,8 @@ package ch.adolio.deactivator
 			}
 			
 			// Trigger callback
-			if (activityChangedCallback)
-				activityChangedCallback(_isActive);
+			if (_activityChangedCallback)
+				_activityChangedCallback(_isActive);
 		}
 		
 		internal function deactivate(propagate:Boolean):void
