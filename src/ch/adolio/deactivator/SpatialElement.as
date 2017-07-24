@@ -39,7 +39,7 @@ package ch.adolio.deactivator
 		
 		// Update management
 		private var _aabbUpdated:Boolean = false;
-		private var _timeSinceLastUpdate:Number = 0; // sec
+		private var _timeSinceLastUpdate:Number = Number.MAX_VALUE; // sec, make sure that the first update happens right away.
 		private var _updateCooldown:Number = 1.0 / 10.0; // sec
 		
 		// Callback
