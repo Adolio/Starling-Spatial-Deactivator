@@ -56,13 +56,24 @@ private var _spatialElement:SpatialElement;
 
 public function MyGameObject(gameManager:MyGameManager)
 {
+	// Setup game object core components
+	_mySprite = ...;
+	_myPhysicalBody = ...;
+	
+	// IMPORTANT: Make sure that the object starts inactive!
+	// The deactivator will take care of activating it right away if needed.
+	onSpatialElementActivityChanged(false);
+	
 	// Create spatial element
-	_spatialElement = new SpatialElement(gameManager.deactivator, false); // Element starts inactive
+	_spatialElement = new SpatialElement(gameManager.deactivator);
 	_spatialElement.activityChangedCallback = onSpatialElementActivityChanged;
+	
+	// Initial position update
+	updatePosition();
 }
 
-// Called at each frame...
-public function update():void
+// Called during frame update...
+public function updatePosition():void
 {
 	// Update game object position & size
 	x = ...; // Your complex stuff here
@@ -82,6 +93,10 @@ private function onSpatialElementActivityChanged(active:Boolean):void
 	...
 }
 ```
+**Important notes:**
+	
+- Your game objects must start inactive.
+- Update spatial elements only when AABB has changed.
 
 ### 🐜 Enabling debug mode
 
