@@ -45,7 +45,7 @@ package ch.adolio.deactivator
 		private var _activeArea:Rectangle;
 		private var _activeAreaUpdated:Boolean = false;
 		private var _activeAreaUpdateCooldown:Number = 1.0 / 10.0; // sec
-		private var _activeAreaTimeSinceLastUpdate:Number = Number.MAX_VALUE; // sec
+		private var _activeAreaTimeSinceLastUpdate:Number = Number.MAX_VALUE; // sec, make sure that the first update happens right away.
 		
 		// registered elements
 		private var _elements:Vector.<SpatialElement> = new Vector.<SpatialElement>();
@@ -96,6 +96,10 @@ package ch.adolio.deactivator
 			
 			// clear active area
 			_activeArea.setTo(0, 0, 1, 1);
+			_activeAreaUpdated = false;
+			_activeAreaTimeSinceLastUpdate = Number.MAX_VALUE; // make sure that the next update happens right away.
+			
+			// update debug
 			updateActiveAreaDebugQuad();
 		}
 		
