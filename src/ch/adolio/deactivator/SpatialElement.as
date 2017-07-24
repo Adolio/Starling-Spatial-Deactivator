@@ -61,10 +61,9 @@ package ch.adolio.deactivator
 		 * @param	isActive, initial element activity
 		 * @param	isActivityBridge, the element transfers its activity over chunks.
 		 */
-		public function SpatialElement(deactivator:SpatialDeactivator, isActive:Boolean, isActivityBridge:Boolean = true)
+		public function SpatialElement(deactivator:SpatialDeactivator, isActivityBridge:Boolean = true)
 		{
 			_deactivator = deactivator;
-			_isActive = isActive;
 			_isActivityBridge = isActivityBridge;
 			
 			// Register element

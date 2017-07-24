@@ -59,10 +59,12 @@ package
 			_mouvementRadius = Math.random() * 100;
 			_angularSpeed = ((Math.random() - 0.5) * 2) * 0.3;
 			
+			// Make sure that the object is starting inactive
+			isActive = false;
+			
 			// Setup spatial element (static objects do not transfer activity over spatial chunks)
-			_spatialElement = new SpatialElement(deactivator, false, !_isStatic);
+			_spatialElement = new SpatialElement(deactivator, !_isStatic);
 			_spatialElement.activityChangedCallback = onSpatialElementActivityChanged;
-			isActive = _spatialElement.isActive;
 			
 			// Setup starting position
 			updatePosition();
