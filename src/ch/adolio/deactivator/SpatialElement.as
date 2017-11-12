@@ -85,6 +85,10 @@ package ch.adolio.deactivator
 		{
 			_aabb.setTo(x, y, width, height);
 			_aabbUpdated = true;
+			
+			// Update directly if cool down is over
+			if (_timeSinceLastUpdate >= _updateCooldown)
+				update();
 		}
 		
 		public function destroy():void
@@ -154,7 +158,7 @@ package ch.adolio.deactivator
 				{
 					// If the element was an active bridge, it could break the activity tree.
 					// In that case it's necessary to re-check all the activity propagation.
-					_deactivator.updateActiveChunksFromLastActiveArea();
+					_deactivator.updateChunksActivity();
 				}
 			}
 			
@@ -189,12 +193,7 @@ package ch.adolio.deactivator
 			_timeSinceLastUpdate += time;
 			
 			if (_aabbUpdated && _timeSinceLastUpdate >= _updateCooldown)
-			{
-				_aabbUpdated = false;
-				_timeSinceLastUpdate = 0;
-				
 				update();
-			}
 		}
 		
 		// --------------------------------------------------------------------
@@ -203,6 +202,10 @@ package ch.adolio.deactivator
 		
 		private function update():void
 		{
+			// Reset invalidation & cooldown
+			_aabbUpdated = false;
+			_timeSinceLastUpdate = 0;
+			
 			// Update debug graphics
 			if (_debugQuad != null) {
 				_debugQuad.x = _aabb.x;
@@ -285,7 +288,7 @@ package ch.adolio.deactivator
 				// In that case it's necessary to re-check all the activity propagation.
 				if (_isActive)
 				{
-					_deactivator.updateActiveChunksFromLastActiveArea();
+					_deactivator.updateChunksActivity();
 				}
 				// If the element was inactive (was a bridge between two inactive chunks)
 				else
@@ -298,7 +301,7 @@ package ch.adolio.deactivator
 			{
 				// If the element was an active bridge, it could break the activity tree and become inactive
 				// In that case it's necessary to re-check all the activity propagation.
-				_deactivator.updateActiveChunksFromLastActiveArea();
+				_deactivator.updateChunksActivity();
 				checkActivityFromCoveredChunks(false);
 			}
 			else

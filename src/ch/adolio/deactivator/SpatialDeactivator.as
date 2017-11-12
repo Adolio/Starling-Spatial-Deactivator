@@ -76,8 +76,13 @@ package ch.adolio.deactivator
 		
 		public function updateActiveArea(area:Rectangle):void
 		{
+			// Update active area
 			_activeArea.setTo(area.x, area.y, area.width, area.height);
 			_activeAreaUpdated = true;
+			
+			// Update chunks directly if cooldown is over
+			if (_activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
+				updateChunksActivity();
 		}
 		
 		public function clear():void
@@ -145,6 +150,49 @@ package ch.adolio.deactivator
 			_activeAreaUpdateCooldown = value;
 		}
 		
+		/**
+		 * This method is automatically called during advanceTime (IAnimatable) 
+		 * when the active area has been updated and the refresh cooldown is over.
+		 * 
+		 * Anyway sometimes it could be useful to request a manual update to force the deactivator
+		 * to refresh the connected chunks that's why the method has a public scope.
+		 */
+		public function updateChunksActivity():void
+		{
+			// Reset invalidation & cooldown
+			_activeAreaTimeSinceLastUpdate = 0;
+			_activeAreaUpdated = false;
+			
+			// Update debug
+			updateActiveAreaDebugQuad();
+			
+			// Get the chunks touched by the new active area
+			_activeChunks = getChunksTouchedBy(_activeArea, _activeChunks);
+			
+			// Find (recursively) all the connected chunks
+			for (var i:int = 0; i < _activeChunks.length; ++i)
+			{
+				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
+			}
+			
+			// Update only the old & new chunk activity
+			for each (var chunk:SpatialChunk in _chunks)
+			{
+				var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
+				
+				// Activate chunks not yet active
+				if (inNewActiveChunks && !chunk.isActive)
+				{
+					chunk.activate(false);
+				}
+				// Deactivate chunks not anymore active
+				else if (!inNewActiveChunks && chunk.isActive)
+				{
+					chunk.deactivate(false);
+				}
+			}
+		}
+		
 		// --------------------------------------------------------------------
 		// -- Overrided methods
 		// --------------------------------------------------------------------
@@ -154,17 +202,7 @@ package ch.adolio.deactivator
 			_activeAreaTimeSinceLastUpdate += time;
 			
 			if (_activeAreaUpdated && _activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
-			{
-				// Reset cooldown
-				_activeAreaTimeSinceLastUpdate = 0;
-				_activeAreaUpdated = false;
-				
-				// Update chunks & elements
-				updateActiveChunksFromLastActiveArea();
-				
-				// Debug
-				updateActiveAreaDebugQuad();
-			}
+				updateChunksActivity();
 			
 			super.advanceTime(time);
 		}
@@ -208,35 +246,6 @@ package ch.adolio.deactivator
 		{
 			remove(element);
 			_elements.removeAt(_elements.indexOf(element));
-		}
-		
-		internal function updateActiveChunksFromLastActiveArea():void
-		{
-			// Get the chunks touched by the new active area
-			_activeChunks = getChunksTouchedBy(_activeArea, _activeChunks);
-			
-			// Find (recursively) all the connected chunks
-			for (var i:int = 0; i < _activeChunks.length; ++i)
-			{
-				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
-			}
-			
-			// Update only the old & new chunk activity
-			for each (var chunk:SpatialChunk in _chunks)
-			{
-				var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
-				
-				// Activate chunks not yet active
-				if (inNewActiveChunks && !chunk.isActive)
-				{
-					chunk.activate(false);
-				}
-				// Deactivate chunks not anymore active
-				else if (!inNewActiveChunks && chunk.isActive)
-				{
-					chunk.deactivate(false);
-				}
-			}
 		}
 		
 		internal function getChunksTouchedBy(aabb:Rectangle, result:Vector.<SpatialChunk> = null):Vector.<SpatialChunk>
