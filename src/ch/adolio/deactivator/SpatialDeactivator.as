@@ -38,7 +38,7 @@ package ch.adolio.deactivator
 		// Chunks
 		private var _chunkWidth:Number = 128;
 		private var _chunkHeight:Number = 128;
-		private var _chunks:Dictionary = new Dictionary();
+		private var _chunksX:Dictionary = new Dictionary(); // Dictionary (X) of Dictionaries (Y)
 		private var _activeChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
 		
 		// Active area
@@ -93,10 +93,14 @@ package ch.adolio.deactivator
 			
 			// clear chunks
 			_activeChunks.slice(0, _activeChunks.length);
-			for (var key:String in _chunks) {
-				var chunk:SpatialChunk = _chunks[key];
-				chunk.destroy();
-				delete _chunks[key];
+			for (var xKey:int in _chunksX) {
+				var chunksY:Dictionary = _chunksX[xKey];
+				for (var yKey:int in chunksY) {
+					var chunk:SpatialChunk = chunksY[yKey];
+					chunk.destroy();
+					delete chunksY[yKey];
+				}
+				delete _chunksX[xKey];
 			}
 			
 			// clear active area
@@ -120,7 +124,7 @@ package ch.adolio.deactivator
 			// Nullify references
 			_activeArea = null;
 			_activeChunks = null;
-			_chunks = null;
+			_chunksX = null;
 			_activeAreaDebugQuad = null;
 			_debugSprite = null;
 		}
@@ -176,19 +180,22 @@ package ch.adolio.deactivator
 			}
 			
 			// Update only the old & new chunk activity
-			for each (var chunk:SpatialChunk in _chunks)
+			for each (var chunksY:Dictionary in _chunksX)
 			{
-				var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
-				
-				// Activate chunks not yet active
-				if (inNewActiveChunks && !chunk.isActive)
+				for each (var chunk:SpatialChunk in chunksY)
 				{
-					chunk.activate(false);
-				}
-				// Deactivate chunks not anymore active
-				else if (!inNewActiveChunks && chunk.isActive)
-				{
-					chunk.deactivate(false);
+					var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
+					
+					// Activate chunks not yet active
+					if (inNewActiveChunks && !chunk.isActive)
+					{
+						chunk.activate(false);
+					}
+					// Deactivate chunks not anymore active
+					else if (!inNewActiveChunks && chunk.isActive)
+					{
+						chunk.deactivate(false);
+					}
 				}
 			}
 		}
@@ -221,16 +228,10 @@ package ch.adolio.deactivator
 			}
 		}
 		
-		private static function getChunkId(ix:int, iy:int):String
-		{
-			// According to http://jacksondunstan.com/articles/669, String(x) is the most efficient way to cast to String.
-			return String(ix) + "_" + String(iy);
-		}
-		
 		private function createChunk(chunkX:int, chunkY:int):SpatialChunk
 		{
 			var chunk:SpatialChunk = new SpatialChunk(this, chunkX, chunkY, _debugSprite != null);
-			_chunks[getChunkId(chunkX, chunkY)] = chunk;
+			setChunk(chunkX, chunkY, chunk);
 			if(_debugSprite && chunk.debugQuad)
 				_debugSprite.addChildAt(chunk.debugQuad, 0);
 			return chunk;
@@ -262,13 +263,14 @@ package ch.adolio.deactivator
 			var ymin:int = Math.floor(aabb.top / _chunkHeight);
 			var ymax:int = Math.ceil(aabb.bottom / _chunkHeight);
 			
+			// TODO Can be optimized a bit by direcly browsing Dictionary dimensions
 			// Generate the list of chunks
 			var chunk:SpatialChunk;
 			for (var ix:int = xmin; ix < xmax; ++ix)
 			{
 				for (var iy:int = ymin; iy < ymax; ++iy)
 				{
-					chunk = _chunks[getChunkId(ix, iy)];
+					chunk = getChunk(ix, iy);
 					
 					if (!chunk)
 						chunk = createChunk(ix, iy);
@@ -278,6 +280,24 @@ package ch.adolio.deactivator
 			}
 			
 			return result;
+		}
+		
+		internal function getChunk(x:int, y:int):SpatialChunk
+		{
+			var chunksY:Dictionary = _chunksX[x];
+			if (chunksY != null)
+				return chunksY[y];
+			
+			return null;
+		}
+		
+		internal function setChunk(x:int, y:int, chunk:SpatialChunk):void
+		{
+			var chunksY:Dictionary = _chunksX[x];
+			if (chunksY == null)
+				_chunksX[x] = chunksY = new Dictionary();
+			
+			chunksY[y] = chunk;
 		}
 	}
 }
