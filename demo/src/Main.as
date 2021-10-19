@@ -16,7 +16,7 @@ package
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
 	import starling.core.Starling;
-	
+
 	public class Main extends Sprite
 	{
 		public function Main()
@@ -25,7 +25,7 @@ package
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
 			Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
-			
+
 			// Setup Starling Framework
 			var starling:Starling = new Starling(SpatialDeactivatorDemo, stage);
 			starling.start();

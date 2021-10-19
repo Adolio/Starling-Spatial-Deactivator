@@ -1,0 +1,16 @@
+{
+	"type": "lib",
+	"compilerOptions": {
+		"swf-version": 44,
+		"source-path": [
+			"src"
+		],
+		"library-path": [
+			"lib"
+		],
+		"include-sources": [
+			"src"
+		],
+		"output": "bin/starling-spatial-deactivator.swc"
+	}
+}

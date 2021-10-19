@@ -1,0 +1,30 @@
+{
+	"config": "air",
+	"compilerOptions": {
+		"output": "bin/Starling-Spatial-Deactivator-Demo.swf",
+		"library-path": [
+			"../lib"
+		],
+		"source-path": [
+			"src",
+			"../src"
+		],
+		"swf-version": 44,
+		"default-background-color": "#000000",
+		"default-frame-rate": 60,
+		"default-size": {
+			"width": 800,
+			"height": 480
+		}
+	},
+	"application": "application.xml",
+	"files": [
+		"src/Main.as"
+	],
+	"airOptions": {
+		"windows": {
+			"target": "native",
+			"output": "bin/Starling-Spatial-Deactivator-Demo.exe"
+		}
+	}
+}
