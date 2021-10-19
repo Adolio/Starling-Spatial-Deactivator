@@ -2,10 +2,10 @@
 
 ![Missing picture](./doc/images/Spatial-Deactivator-Main.png "Starling - Spatial Deactivator")
 
-This Starling extension is an approach to solve 2D spatial activation / deactivation of game objects. It is meant to take care of showing / hidding game elements that are outside of the screen for example, but not only...
-You will be able to basically do what you want with a game object when it is considered as active or inactive.
+This Starling extension is an approach to solve 2D spatial activation / deactivation of game objects. It is meant to take care of showing / hiding game elements that are outside of the screen for example, but not only...
+You will be able to basically do whatever you want with a game object when it is considered as active or inactive.
 
-This library could be useful for you if:	
+This library could be useful for you if:
 - Your game objects could leave a defined active area (camera view for instance) and therefore they need to be deactivated.
 - Your game objects could interact with each other and you need to make sure that colliding game objects are "safely" deactivated.
 
@@ -19,7 +19,7 @@ Try it [here](http://adolio.ch/projects/Starling-Spatial-Deactivator)!
 
 ### In your ```GameManager```:
 
-```
+```actionscript
 private var _deactivator:SpatialDeactivator;
 private var _activeAreaAABB:Rectangle = new Rectangle(0, 0, 120, 80);
 
@@ -38,12 +38,12 @@ public function update():void
 	_activeAreaAABB.y = ...; // Your complex stuff here
 	_activeAreaAABB.width = ...; // Your complex stuff here
 	_activeAreaAABB.height = ...; // Your complex stuff here
-	
+
 	// IMPORTANT TIP: Update only if AABB has changed!
 	_deactivator.updateActiveArea(_activeAreaAABB);
 }
 
-public function get deactivator():SpatialDeactivator 
+public function get deactivator():SpatialDeactivator
 {
 	return _deactivator;
 }
@@ -51,7 +51,7 @@ public function get deactivator():SpatialDeactivator
 
 ### In your ```GameObject```:
 
-```
+```actionscript
 private var _spatialElement:SpatialElement;
 
 public function MyGameObject(gameManager:MyGameManager)
@@ -59,15 +59,15 @@ public function MyGameObject(gameManager:MyGameManager)
 	// Setup game object core components
 	_mySprite = ...;
 	_myPhysicalBody = ...;
-	
+
 	// IMPORTANT: Make sure that the object starts inactive!
 	// The deactivator will take care of activating it right away if needed.
 	onSpatialElementActivityChanged(false);
-	
+
 	// Create spatial element
 	_spatialElement = new SpatialElement(gameManager.deactivator);
 	_spatialElement.activityChangedCallback = onSpatialElementActivityChanged;
-	
+
 	// Initial position update
 	updatePosition();
 }
@@ -80,7 +80,7 @@ public function updatePosition():void
 	y = ...; // Your complex stuff here
 	width = ...; // Your complex stuff here
 	height = ...; // Your complex stuff here
-	
+
 	// IMPORTANT TIP: Update only if AABB has changed!
 	_spatialElement.updateAABB(x, y, width, height);
 }
@@ -94,7 +94,7 @@ private function onSpatialElementActivityChanged(active:Boolean):void
 }
 ```
 **Important notes:**
-	
+
 - Your game objects must start inactive.
 - Update spatial elements only when AABB has changed.
 
@@ -104,7 +104,7 @@ Debug mode will help you to see if you have chosen the right configuration (see 
 
 You can enable it simply like this:
 
-```
+```actionscript
 _deactivator = new SpatialDeactivator(32, 32, true);
 
 if(_deactivator.debugSprite)
@@ -118,7 +118,7 @@ Just clone or download the repository and copy/paste the ```src/ch``` folder int
 
 ## 💡 Important aspects
 
-### 1. Find your right chunks size
+### 1. Find the right chunks size
 
 One important point to make this tool efficient for you is to find the correct chunk size to best fit to your needs.
 
@@ -127,17 +127,17 @@ One important point to make this tool efficient for you is to find the correct c
 
 You can test & see what's the best for you by enabling the debug mode (see 🐜 section).
 
-I personnally use a ratio of ```0.25``` compared to the active area size.
+I personally use a ratio of ```0.25``` compared to the active area size.
 
-```
+```actionscript
 new SpatialDeactivator(_activeAreaAABB.width * 0.25, _activeAreaAABB.height * 0.25);
 ```
 
-### 2. Find your right active area size
+### 2. Find the right active area size
 
 If your active area corresponds to the camera view, using margin could be useful to anticipate activation of upcoming game objects.
 
-```
+```actionscript
 private var _margin:Number = 20;
 private var _activeAreaAABB:Rectangle = new Rectangle(0, 0, 120 + _margin, 80 + _margin);
 ...
@@ -146,11 +146,11 @@ _activeAreaAABB.y = y - _margin * 0.5;
 deactivator.updateActiveArea(_activeAreaAABB);
 ```
 
-### 3. Find your right spatial element size
+### 3. Find the right spatial element size
 
 The size of a spatial element should cover the entire size of your game object to make sure that the game object doesn't become inactive too early or active too lately.
 If needed, the size of your spatial elements can be a bit bigger than your game objects bounds as well:
 
-```
+```actionscript
 _spatialElement.updateAABB(x - margin * 0.5, y - margin * 0.5, width + margin, height + margin);
 ```
