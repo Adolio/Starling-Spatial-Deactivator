@@ -32,7 +32,7 @@ package ch.adolio.deactivator
 		// Spatial deactivation
 		private var _deactivator:SpatialDeactivator;
 		private var _aabb:Rectangle = new Rectangle();
-		private var _newChunks:Vector.<SpatialChunk>;
+		private var _newCoveredChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
 		private var _isActive:Boolean = false;
 		private var _isActivityBridge:Boolean = true; // A bridge propagates activity over chunks
 		private var _coveredChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
@@ -105,11 +105,12 @@ package ch.adolio.deactivator
 		{
 			_deactivator.removeElement(this);
 
-			// Remove element from chunks & clear chunk list
-			// No need to clear _newChunks because _coveredChunks == _newChunks
-			for (var i:int = 0; i < _coveredChunks.length; ++i )
-				_coveredChunks[i].removeElement(this);
-			_coveredChunks.splice(0, _coveredChunks.length);
+			// Remove elements from covered chunks
+			while (_coveredChunks.length > 0)
+				_coveredChunks.pop().removeElement(this);
+
+			// clear new chunk list
+			_newCoveredChunks.length = 0;
 
 			// Dispose graphical debug
 			if (_debugQuad)
@@ -118,7 +119,7 @@ package ch.adolio.deactivator
 			// Nullify references
 			_deactivator = null;
 			_aabb = null;
-			_newChunks = null;
+			_newCoveredChunks = null;
 			_coveredChunks = null;
 			activityChangedCallback = null;
 			_debugQuad = null;
@@ -236,8 +237,8 @@ package ch.adolio.deactivator
 			// update debugging
 			updateDebugAABB();
 
-			// Acquire the new covered chunks (requires a new vector instance for later pointer assignment)
-			_newChunks = _deactivator.getChunksTouchedBy(_aabb, null);
+			// Acquire the new covered chunks
+			_deactivator.getChunksTouchedBy(_aabb, _newCoveredChunks);
 
 			// Temp variables
 			var chunk:SpatialChunk;
@@ -248,7 +249,7 @@ package ch.adolio.deactivator
 			for (i = 0; i < _coveredChunks.length; ++i)
 			{
 				chunk = _coveredChunks[i];
-				if (_newChunks.indexOf(chunk) == -1)
+				if (_newCoveredChunks.indexOf(chunk) == -1)
 				{
 					chunk.removeElement(this);
 					leftChunk = true;
@@ -257,9 +258,9 @@ package ch.adolio.deactivator
 
 			// Join new chunks
 			var enteredChunk:Boolean = false
-			for (i = 0; i < _newChunks.length; ++i)
+			for (i = 0; i < _newCoveredChunks.length; ++i)
 			{
-				chunk = _newChunks[i];
+				chunk = _newCoveredChunks[i];
 				if (_coveredChunks.indexOf(chunk) == -1)
 				{
 					chunk.addElement(this);
@@ -267,8 +268,10 @@ package ch.adolio.deactivator
 				}
 			}
 
-			// New chunks become covered chunks (pointer assignment)
-			_coveredChunks = _newChunks;
+			// Transfer new covered chunks in the covered chunks
+			_coveredChunks.length = 0;
+			while (_newCoveredChunks.length > 0)
+				_coveredChunks.push(_newCoveredChunks.pop());
 
 			// If non-activity bridge, just check new covered chunks activity
 			if (!_isActivityBridge)

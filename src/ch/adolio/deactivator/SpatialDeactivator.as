@@ -294,13 +294,10 @@ package ch.adolio.deactivator
 			_elements.removeAt(_elements.indexOf(element));
 		}
 
-		internal function getChunksTouchedBy(aabb:Rectangle, result:Vector.<SpatialChunk> = null):Vector.<SpatialChunk>
+		internal function getChunksTouchedBy(aabb:Rectangle, output:Vector.<SpatialChunk>):Vector.<SpatialChunk>
 		{
-			// Initialize resulting list of chunks
-			if (result)
-				result.length = 0;
-			else
-				result = new Vector.<SpatialChunk>();
+			// Clear output
+			output.length = 0;
 
 			// Find min/max index on each axis
 			var xmin:int = Math.floor(aabb.left / _chunkWidth);
@@ -308,23 +305,28 @@ package ch.adolio.deactivator
 			var ymin:int = Math.floor(aabb.top / _chunkHeight);
 			var ymax:int = Math.ceil(aabb.bottom / _chunkHeight);
 
-			// TODO Can be optimized a bit by direcly browsing Dictionary dimensions
 			// Generate the list of chunks
 			var chunk:SpatialChunk;
 			for (var ix:int = xmin; ix < xmax; ++ix)
 			{
+				var chunksY:Dictionary = _chunksX[ix];
+
+				// Create missing dimension Dictionary
+				if (!chunksY)
+					_chunksX[ix] = chunksY = new Dictionary();
+
 				for (var iy:int = ymin; iy < ymax; ++iy)
 				{
-					chunk = getChunk(ix, iy);
+					chunk = chunksY[iy];
 
 					if (!chunk)
 						chunk = createChunk(ix, iy);
 
-					result.push(chunk);
+					output.push(chunk);
 				}
 			}
 
-			return result;
+			return output;
 		}
 
 		internal function getChunk(x:int, y:int):SpatialChunk
