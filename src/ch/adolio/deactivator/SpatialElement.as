@@ -13,17 +13,17 @@ package ch.adolio.deactivator
 	import flash.geom.Rectangle;
 	import starling.animation.IAnimatable;
 	import starling.display.Quad;
-	
+
 	/**
 	 * A Spatial element represents a user object in the context of the Spatial Deactivator.
-	 * 
-	 * It can be active or inactive. The activity of the element is managed internally and 
+	 *
+	 * It can be active or inactive. The activity of the element is managed internally and
 	 * cannot be changed manually (it could break the consistency of the context).
-	 * The function field 'activityChangedCallback', if defined, will let you know when the 
+	 * The function field 'activityChangedCallback', if defined, will let you know when the
 	 * activity has been updated.
-	 * 
+	 *
 	 * The method 'updateAABB' must be called each time your object has changed (position and/or size).
-	 * For optimization reasons, you can add an update cooldown to avoid updating the element and 
+	 * For optimization reasons, you can add an update cooldown to avoid updating the element and
 	 * its context at each frame. Call the 'updateCooldown' setter to configure the cooldown time (in seconds).
 	 * Note that the default cooldown is not equals to 0.
 	 */
@@ -36,15 +36,15 @@ package ch.adolio.deactivator
 		private var _isActive:Boolean = false;
 		private var _isActivityBridge:Boolean = true; // A bridge propagates activity over chunks
 		private var _coveredChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
-		
+
 		// Update management
 		private var _aabbUpdated:Boolean = false;
 		private var _timeSinceLastUpdate:Number = Number.MAX_VALUE; // sec, make sure that the first update happens right away.
 		private var _updateCooldown:Number = 1.0 / 10.0; // sec
-		
+
 		// Callback
 		private var _activityChangedCallback:Function;
-		
+
 		// Debug mode
 		private var _debugQuad:Quad;
 		private var _activeAlpha:Number = 0.8;
@@ -53,58 +53,68 @@ package ch.adolio.deactivator
 		private var _inactiveBridgeColor:uint = 0x333333;
 		private var _activeNonBridgeColor:uint = 0x269AD9;
 		private var _inactiveNonBridgeColor:uint = 0x333333;
-		
-		/** 
+
+		/**
 		 * Constructor of a Spatial Element
-		 * 
+		 *
 		 * @param	deactivator, deactivation manager
-		 * @param	isActive, initial element activity
 		 * @param	isActivityBridge, the element transfers its activity over chunks.
+		 * @param	activityChangedCallbackFunc, callback called when activity changed. Prototype: function(bool isActive):void
 		 */
-		public function SpatialElement(deactivator:SpatialDeactivator, isActivityBridge:Boolean = true)
+		public function SpatialElement(deactivator:SpatialDeactivator, isActivityBridge:Boolean = true, activityChangedCallbackFunc:Function = null)
 		{
 			_deactivator = deactivator;
 			_isActivityBridge = isActivityBridge;
-			
+			_activityChangedCallback = activityChangedCallbackFunc;
+
 			// Register element
 			_deactivator.addElement(this);
-			
+
 			// Create debug graphics
-			if(_deactivator.debugSprite) {
+			if (_deactivator.debugSprite)
+			{
 				_debugQuad = new Quad(1, 1, _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor));
 				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
 				_deactivator.debugSprite.addChild(_debugQuad);
 			}
+
+			// make sure the element is active if the deactivator is disabled
+			if (!_deactivator.isEnable)
+				activate(false);
 		}
-		
+
 		// --------------------------------------------------------------------
 		// -- Public API
 		// --------------------------------------------------------------------
-		
+
 		public function updateAABB(x:Number, y:Number, width:Number, height:Number):void
 		{
 			_aabb.setTo(x, y, width, height);
 			_aabbUpdated = true;
-			
+
+			// update debugging when deactivator is disabled
+			if (!_deactivator.isEnable)
+				updateDebugAABB();
+
 			// Update directly if cool down is over
 			if (_timeSinceLastUpdate >= _updateCooldown)
 				update();
 		}
-		
+
 		public function destroy():void
 		{
 			_deactivator.removeElement(this);
-			
+
 			// Remove element from chunks & clear chunk list
 			// No need to clear _newChunks because _coveredChunks == _newChunks
 			for (var i:int = 0; i < _coveredChunks.length; ++i )
 				_coveredChunks[i].removeElement(this);
 			_coveredChunks.splice(0, _coveredChunks.length);
-			
+
 			// Dispose graphical debug
 			if (_debugQuad)
 				_debugQuad.removeFromParent(true);
-			
+
 			// Nullify references
 			_deactivator = null;
 			_aabb = null;
@@ -113,35 +123,35 @@ package ch.adolio.deactivator
 			activityChangedCallback = null;
 			_debugQuad = null;
 		}
-		
+
 		public function get isActive():Boolean
 		{
 			return _isActive;
 		}
-		
-		public function get updateCooldown():Number 
+
+		public function get updateCooldown():Number
 		{
 			return _updateCooldown;
 		}
-		
+
 		public function set updateCooldown(value:Number):void
 		{
 			_updateCooldown = value;
 		}
-		
-		public function get isActivityBridge():Boolean 
+
+		public function get isActivityBridge():Boolean
 		{
 			return _isActivityBridge;
 		}
-		
-		public function set isActivityBridge(value:Boolean):void 
+
+		public function set isActivityBridge(value:Boolean):void
 		{
 			// Only if value has changed
 			if (value == _isActivityBridge)
 				return;
-			
+
 			_isActivityBridge = value;
-			
+
 			// Is active...
 			if (_isActive)
 			{
@@ -161,67 +171,78 @@ package ch.adolio.deactivator
 					_deactivator.updateChunksActivity();
 				}
 			}
-			
+
 			updateDebugFromStatus();
 		}
-		
-		public function get activityChangedCallback():Function 
+
+		public function get activityChangedCallback():Function
 		{
 			return _activityChangedCallback;
 		}
-		
-		public function set activityChangedCallback(value:Function):void 
+
+		public function set activityChangedCallback(value:Function):void
 		{
 			_activityChangedCallback = value;
 		}
-		
-		public function updateDebugFromStatus():void 
-		{
-			if (_debugQuad) {
-				_debugQuad.color = _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor);
-				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
-			}
-		}
-		
+
 		// --------------------------------------------------------------------
 		// -- Interface methods
 		// --------------------------------------------------------------------
-		
+
 		// Automatically called by the Spatial Deactivator
 		public function advanceTime(time:Number):void
 		{
 			_timeSinceLastUpdate += time;
-			
+
 			if (_aabbUpdated && _timeSinceLastUpdate >= _updateCooldown)
 				update();
 		}
-		
+
 		// --------------------------------------------------------------------
 		// -- Private / internal methods
 		// --------------------------------------------------------------------
-		
-		private function update():void
+
+		private function updateDebugAABB():void
 		{
-			// Reset invalidation & cooldown
-			_aabbUpdated = false;
-			_timeSinceLastUpdate = 0;
-			
-			// Update debug graphics
-			if (_debugQuad != null) {
+			if (_debugQuad)
+			{
 				_debugQuad.x = _aabb.x;
 				_debugQuad.y = _aabb.y;
 				_debugQuad.width = _aabb.width;
 				_debugQuad.height = _aabb.height;
 				_deactivator.debugSprite.addChild(_debugQuad); // Move on top
 			}
-			
+		}
+
+		private function updateDebugFromStatus():void
+		{
+			if (_debugQuad)
+			{
+				_debugQuad.color = _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor);
+				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
+			}
+		}
+
+		private function update():void
+		{
+			// Only update if the deactivator is active
+			if (!_deactivator.isEnable)
+				return;
+
+			// Reset invalidation & cooldown
+			_aabbUpdated = false;
+			_timeSinceLastUpdate = 0;
+
+			// update debugging
+			updateDebugAABB();
+
 			// Acquire the new covered chunks (requires a new vector instance for later pointer assignment)
 			_newChunks = _deactivator.getChunksTouchedBy(_aabb, null);
-			
+
 			// Temp variables
 			var chunk:SpatialChunk;
 			var i:int;
-			
+
 			// Left old chunks
 			var leftChunk:Boolean = false
 			for (i = 0; i < _coveredChunks.length; ++i)
@@ -233,7 +254,7 @@ package ch.adolio.deactivator
 					leftChunk = true;
 				}
 			}
-			
+
 			// Join new chunks
 			var enteredChunk:Boolean = false
 			for (i = 0; i < _newChunks.length; ++i)
@@ -245,10 +266,10 @@ package ch.adolio.deactivator
 					enteredChunk = true;
 				}
 			}
-			
+
 			// New chunks become covered chunks (pointer assignment)
 			_coveredChunks = _newChunks;
-			
+
 			// If non-activity bridge, just check new covered chunks activity
 			if (!_isActivityBridge)
 			{
@@ -256,7 +277,7 @@ package ch.adolio.deactivator
 					checkActivityFromCoveredChunks(false);
 				return;
 			}
-			
+
 			// Activity bridge:
 			// Enter a new chunk but did not left another
 			if (enteredChunk && !leftChunk)
@@ -309,10 +330,10 @@ package ch.adolio.deactivator
 				// If the element didn't leave a chunk & didn't enter a chunk, there is nothing to do.
 			}
 		}
-		
+
 		/** Check if element must be active according to covered chunks */
 		internal function checkActivityFromCoveredChunks(propagate:Boolean):void
-		{	
+		{
 			var i:int;
 			if (_isActive)
 			{
@@ -320,7 +341,7 @@ package ch.adolio.deactivator
 				for (i = 0; i < _coveredChunks.length; ++i)
 					if (_coveredChunks[i].isActive)
 						return;
-						
+
 				deactivate(propagate);
 			}
 			else
@@ -336,72 +357,76 @@ package ch.adolio.deactivator
 				}
 			}
 		}
-		
+
 		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void
 		{
 			// Only activity bridge are linking chunks
 			if (!_isActivityBridge)
 				return;
-			
+
 			for (var i:int = 0; i < _coveredChunks.length; ++i)
 			{
 				var chunk:SpatialChunk = _coveredChunks[i];
-				
+
 				// Add only unpresent chunk
 				if (chunks.indexOf(chunk) == -1)
 				{
 					// Add the chunk
 					chunks.push(chunk);
-					
+
 					// Recursively add linked chunks
 					chunk.fillListWithLinkedChunks(chunks);
 				}
 			}
 		}
-		
+
 		internal function activate(propagate:Boolean):void
 		{
 			if (_isActive)
 				return;
-			
+
 			_isActive = true;
-			
+
 			// Update debug rendering
-			if (_debugQuad) {
+			if (_debugQuad)
+			{
 				_debugQuad.color = _isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor;
 				_debugQuad.alpha = _activeAlpha;
 			}
-			
+
 			// Only propagate activity if the object is a bridge
-			if (_isActivityBridge && propagate) {
+			if (_isActivityBridge && propagate)
+			{
 				for (var i:int = 0; i < _coveredChunks.length; ++i)
 					_coveredChunks[i].activate(true);
 			}
-			
+
 			// Trigger callback
 			if (_activityChangedCallback)
 				_activityChangedCallback(_isActive);
 		}
-		
+
 		internal function deactivate(propagate:Boolean):void
 		{
 			if (!_isActive)
 				return;
-			
+
 			_isActive = false;
-			
+
 			// Update debug rendering
-			if (_debugQuad) {
+			if (_debugQuad)
+			{
 				_debugQuad.color = _isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor;
 				_debugQuad.alpha = _inactiveAlpha;
 			}
-			
-			if (_isActivityBridge && propagate) {
+
+			if (_isActivityBridge && propagate)
+			{
 				// TODO Implement deactivation check propagation
 				//for (var i:int = 0; i < _coveredChunks.length; ++i)
 				//	_coveredChunks[i].checkActivityFromCoveredElements(propagate);
 			}
-			
+
 			// Trigger callback
 			if (activityChangedCallback)
 				activityChangedCallback(_isActive);
