@@ -35,6 +35,9 @@ package ch.adolio.deactivator
 	 */
 	public class SpatialDeactivator extends Juggler
 	{
+		// version
+		public static const VERSION:String = "0.2";
+
 		// State
 		private var _isEnable:Boolean = true;
 
