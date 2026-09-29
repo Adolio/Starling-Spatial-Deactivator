@@ -21,6 +21,9 @@ package ch.adolio.deactivator
 	 * cannot be changed manually (it could break the consistency of the context).
 	 * The function field 'activityChangedCallback', if defined, will let you know when the
 	 * activity has been updated.
+	 * Callbacks are triggered once the whole context is up to date, before the call that changed the activity
+	 * returns, so they can safely create, destroy or move elements. An activity changed & restored during the
+	 * same update is not notified.
 	 *
 	 * The method 'updateAABB' must be called each time your object has changed (position and/or size).
 	 * For optimization reasons, you can add an update cooldown to avoid updating the element and
@@ -44,6 +47,8 @@ package ch.adolio.deactivator
 
 		// Callback
 		private var _activityChangedCallback:Function;
+		private var _isActivityChangePending:Boolean = false;
+		private var _wasActiveNotified:Boolean = false;
 
 		// Debug mode
 		private var _debugQuad:Quad;
@@ -81,6 +86,8 @@ package ch.adolio.deactivator
 			// make sure the element is active if the deactivator is disabled
 			if (!_deactivator.isEnable)
 				activate(false);
+
+			_deactivator.dispatchActivityChanges();
 		}
 
 		// --------------------------------------------------------------------
@@ -99,6 +106,8 @@ package ch.adolio.deactivator
 			// Update directly if cool down is over
 			if (_timeSinceLastUpdate >= _updateCooldown)
 				update();
+
+			_deactivator.dispatchActivityChanges();
 		}
 
 		/**
@@ -176,11 +185,12 @@ package ch.adolio.deactivator
 				{
 					// If the element was an active bridge, it could break the activity tree.
 					// In that case it's necessary to re-check all the activity propagation.
-					_deactivator.updateChunksActivity();
+					_deactivator.refreshChunksActivity();
 				}
 			}
 
 			updateDebugFromStatus();
+			_deactivator.dispatchActivityChanges();
 		}
 
 		public function get activityChangedCallback():Function
@@ -203,7 +213,10 @@ package ch.adolio.deactivator
 			_timeSinceLastUpdate += time;
 
 			if (_aabbUpdated && _timeSinceLastUpdate >= _updateCooldown)
+			{
 				update();
+				_deactivator.dispatchActivityChanges();
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -319,7 +332,7 @@ package ch.adolio.deactivator
 				// In that case it's necessary to re-check all the activity propagation.
 				if (_isActive)
 				{
-					_deactivator.updateChunksActivity();
+					_deactivator.refreshChunksActivity();
 				}
 				// If the element was inactive (was a bridge between two inactive chunks)
 				else
@@ -332,7 +345,7 @@ package ch.adolio.deactivator
 			{
 				// If the element was an active bridge, it could break the activity tree and become inactive
 				// In that case it's necessary to re-check all the activity propagation.
-				_deactivator.updateChunksActivity();
+				_deactivator.refreshChunksActivity();
 				checkActivityFromCoveredChunks(false);
 			}
 			else
@@ -411,9 +424,7 @@ package ch.adolio.deactivator
 					_coveredChunks[i].activate(true);
 			}
 
-			// Trigger callback
-			if (_activityChangedCallback)
-				_activityChangedCallback(_isActive);
+			queueActivityChange();
 		}
 
 		internal function deactivate(propagate:Boolean):void
@@ -437,9 +448,31 @@ package ch.adolio.deactivator
 				//	_coveredChunks[i].checkActivityFromCoveredElements(propagate);
 			}
 
-			// Trigger callback
-			if (activityChangedCallback)
-				activityChangedCallback(_isActive);
+			queueActivityChange();
+		}
+
+		private function queueActivityChange():void
+		{
+			if (_isActivityChangePending)
+				return;
+
+			_isActivityChangePending = true;
+			_deactivator.queueActivityChange(this);
+		}
+
+		/** Triggers the callback if the activity differs from the last notified one */
+		internal function dispatchActivityChange():void
+		{
+			_isActivityChangePending = false;
+
+			// destroyed elements are not notified anymore
+			if (!_deactivator || _isActive == _wasActiveNotified)
+				return;
+
+			_wasActiveNotified = _isActive;
+
+			if (_activityChangedCallback)
+				_activityChangedCallback(_isActive);
 		}
 	}
 }

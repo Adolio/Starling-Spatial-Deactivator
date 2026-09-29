@@ -97,6 +97,7 @@ private function onSpatialElementActivityChanged(active:Boolean):void
 
 - Your game objects must start inactive.
 - Update spatial elements only when AABB has changed.
+- Activity callbacks are triggered once the deactivator is up to date, so they can safely create, destroy or move spatial elements. An activity changed & restored during the same update is not notified.
 
 ### 🐜 Enabling debug mode
 

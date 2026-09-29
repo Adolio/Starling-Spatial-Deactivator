@@ -56,6 +56,10 @@ package ch.adolio.deactivator
 		// registered elements
 		private var _elements:Vector.<SpatialElement> = new Vector.<SpatialElement>();
 
+		// activity changes dispatch
+		private var _elementsWithPendingActivityChange:Vector.<SpatialElement> = new Vector.<SpatialElement>();
+		private var _isDispatchingActivityChanges:Boolean = false;
+
 		// Debug
 		private var _debugSprite:Sprite;
 		private var _activeAreaDebugQuad:Quad;
@@ -89,7 +93,9 @@ package ch.adolio.deactivator
 
 			// Update chunks directly if cooldown is over
 			if (_activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
-				updateChunksActivity();
+				refreshChunksActivity();
+
+			dispatchActivityChanges();
 		}
 
 		/**
@@ -183,9 +189,11 @@ package ch.adolio.deactivator
 			_isEnable = value;
 
 			if (_isEnable)
-				updateChunksActivity();
+				refreshChunksActivity();
 			else
 				activateAll();
+
+			dispatchActivityChanges();
 		}
 
 		private function activateAll():void
@@ -214,6 +222,43 @@ package ch.adolio.deactivator
 		 * to refresh the connected chunks that's why the method has a public scope.
 		 */
 		public function updateChunksActivity():void
+		{
+			refreshChunksActivity();
+			dispatchActivityChanges();
+		}
+
+		// --------------------------------------------------------------------
+		// -- Overrided methods
+		// --------------------------------------------------------------------
+
+		override public function advanceTime(time:Number):void
+		{
+			// Do not process when not enable
+			if (!_isEnable)
+				return;
+
+			_activeAreaTimeSinceLastUpdate += time;
+
+			if (_activeAreaUpdated && _activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
+			{
+				refreshChunksActivity();
+				dispatchActivityChanges();
+			}
+
+			super.advanceTime(time);
+		}
+
+		// --------------------------------------------------------------------
+		// -- Private / internal methods
+		// --------------------------------------------------------------------
+
+		/**
+		 * Recomputes the activity of the chunks & elements without dispatching activity changes.
+		 *
+		 * Internal code must call this method instead of <code>updateChunksActivity()</code>, since it may
+		 * run while chunks or elements are being iterated.
+		 */
+		internal function refreshChunksActivity():void
 		{
 			// Reset invalidation & cooldown
 			_activeAreaTimeSinceLastUpdate = 0;
@@ -252,27 +297,37 @@ package ch.adolio.deactivator
 			}
 		}
 
-		// --------------------------------------------------------------------
-		// -- Overrided methods
-		// --------------------------------------------------------------------
-
-		override public function advanceTime(time:Number):void
+		internal function queueActivityChange(element:SpatialElement):void
 		{
-			// Do not process when not enable
-			if (!_isEnable)
-				return;
-
-			_activeAreaTimeSinceLastUpdate += time;
-
-			if (_activeAreaUpdated && _activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
-				updateChunksActivity();
-
-			super.advanceTime(time);
+			_elementsWithPendingActivityChange.push(element);
 		}
 
-		// --------------------------------------------------------------------
-		// -- Private / internal methods
-		// --------------------------------------------------------------------
+		/**
+		 * Triggers the activity callbacks of the elements whose activity changed since the last dispatch.
+		 *
+		 * Must only be called at the end of a public entry point, once no chunk or element is being iterated,
+		 * so that callbacks can safely create, destroy or move elements.
+		 */
+		internal function dispatchActivityChanges():void
+		{
+			// changes queued by a callback are dispatched by the ongoing loop
+			if (_isDispatchingActivityChanges)
+				return;
+
+			_isDispatchingActivityChanges = true;
+			var dispatchedCount:int = 0;
+			try
+			{
+				while (dispatchedCount < _elementsWithPendingActivityChange.length)
+					_elementsWithPendingActivityChange[dispatchedCount++].dispatchActivityChange();
+			}
+			finally
+			{
+				// only drop dispatched changes, so that a throwing callback doesn't discard the following ones
+				_elementsWithPendingActivityChange.splice(0, dispatchedCount);
+				_isDispatchingActivityChanges = false;
+			}
+		}
 
 		private function updateActiveAreaDebugQuad():void
 		{
