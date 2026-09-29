@@ -137,7 +137,7 @@ package ch.adolio.deactivator
 			_aabb = null;
 			_newCoveredChunks = null;
 			_coveredChunks = null;
-			activityChangedCallback = null;
+			_activityChangedCallback = null;
 			_debugQuad = null;
 		}
 
@@ -198,9 +198,22 @@ package ch.adolio.deactivator
 			return _activityChangedCallback;
 		}
 
+		/**
+		 * Callback called when the activity changes. Prototype: function(isActive:Boolean):void
+		 *
+		 * The callback owner is assumed to start inactive: a callback set while the element is active is called
+		 * right away, unless a previous callback was already notified of this activity.
+		 */
 		public function set activityChangedCallback(value:Function):void
 		{
 			_activityChangedCallback = value;
+
+			// notify the activity reached without callback
+			if (_deactivator)
+			{
+				queueActivityChange();
+				_deactivator.dispatchActivityChanges();
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -465,14 +478,12 @@ package ch.adolio.deactivator
 		{
 			_isActivityChangePending = false;
 
-			// destroyed elements are not notified anymore
-			if (!_deactivator || _isActive == _wasActiveNotified)
+			// destroyed elements are not notified anymore, and a change without callback stays to be notified
+			if (!_deactivator || _activityChangedCallback == null || _isActive == _wasActiveNotified)
 				return;
 
 			_wasActiveNotified = _isActive;
-
-			if (_activityChangedCallback)
-				_activityChangedCallback(_isActive);
+			_activityChangedCallback(_isActive);
 		}
 	}
 }
