@@ -101,8 +101,15 @@ package ch.adolio.deactivator
 				update();
 		}
 
+		/**
+		 * Unregisters the element from its deactivator. Safe to call more than once.
+		 */
 		public function destroy():void
 		{
+			// already destroyed, possibly by the deactivator being cleared
+			if (!_deactivator)
+				return;
+
 			_deactivator.removeElement(this);
 
 			// Remove elements from covered chunks

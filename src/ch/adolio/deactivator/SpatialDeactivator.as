@@ -92,14 +92,22 @@ package ch.adolio.deactivator
 				updateChunksActivity();
 		}
 
+		/**
+		 * Destroys every remaining element & every chunk, and resets the active area.
+		 *
+		 * Remaining elements are destroyed without triggering their activity callback. Calling their
+		 * <code>destroy()</code> method afterwards is safe, but they must not be used in any other way.
+		 */
 		public function clear():void
 		{
-			// clear elements
-			_elements.slice(0, _elements.length);
+			// destroy elements before chunks, each element unregisters itself from its covered chunks & from the list
+			while (_elements.length > 0)
+				_elements[_elements.length - 1].destroy();
+
 			purge();
 
 			// clear chunks
-			_activeChunks.slice(0, _activeChunks.length);
+			_activeChunks.length = 0;
 			for (var xKey:int in _chunksX)
 			{
 				var chunksY:Dictionary = _chunksX[xKey];
