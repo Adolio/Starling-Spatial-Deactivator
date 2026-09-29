@@ -193,11 +193,30 @@ package ch.adolio.deactivator
 			_isEnable = value;
 
 			if (_isEnable)
-				refreshChunksActivity();
+				refreshAll();
 			else
 				activateAll();
 
 			dispatchActivityChanges();
+		}
+
+		/**
+		 * Recomputes the chunk memberships & the activity of every element, which are frozen while disabled.
+		 */
+		private function refreshAll():void
+		{
+			var ei:int;
+
+			// move elements into their current chunks first, so that the activity propagation follows their current position
+			for (ei = 0; ei < _elements.length; ei++)
+				_elements[ei].updateCoveredChunks();
+
+			refreshChunksActivity();
+
+			// the refresh only updates the elements of chunks whose activity changed, so elements left active by the
+			// disabled state in no chunk or in chunks that were never active must be checked individually
+			for (ei = 0; ei < _elements.length; ei++)
+				_elements[ei].checkActivityFromCoveredChunks(false);
 		}
 
 		private function activateAll():void

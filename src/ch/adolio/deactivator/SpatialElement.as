@@ -32,6 +32,10 @@ package ch.adolio.deactivator
 	 */
 	public class SpatialElement implements IAnimatable
 	{
+		// covered chunks changes
+		internal static const ENTERED_CHUNK:int = 1;
+		internal static const LEFT_CHUNK:int = 2;
+
 		// Spatial deactivation
 		private var _deactivator:SpatialDeactivator;
 		private var _aabb:Rectangle = new Rectangle();
@@ -257,12 +261,13 @@ package ch.adolio.deactivator
 			}
 		}
 
-		private function update():void
+		/**
+		 * Moves the element into the chunks covered by its AABB, without updating any activity.
+		 *
+		 * @return the changes, as a combination of the <code>ENTERED_CHUNK</code> & <code>LEFT_CHUNK</code> flags
+		 */
+		internal function updateCoveredChunks():int
 		{
-			// Only update if the deactivator is active
-			if (!_deactivator.isEnable)
-				return;
-
 			// Reset invalidation & cooldown
 			_aabbUpdated = false;
 			_timeSinceLastUpdate = 0;
@@ -274,30 +279,29 @@ package ch.adolio.deactivator
 			_deactivator.getChunksTouchedBy(_aabb, _newCoveredChunks);
 
 			// Temp variables
+			var changes:int = 0;
 			var chunk:SpatialChunk;
 			var i:int;
 
 			// Left old chunks
-			var leftChunk:Boolean = false
 			for (i = 0; i < _coveredChunks.length; ++i)
 			{
 				chunk = _coveredChunks[i];
 				if (_newCoveredChunks.indexOf(chunk) == -1)
 				{
 					chunk.removeElement(this);
-					leftChunk = true;
+					changes |= LEFT_CHUNK;
 				}
 			}
 
 			// Join new chunks
-			var enteredChunk:Boolean = false
 			for (i = 0; i < _newCoveredChunks.length; ++i)
 			{
 				chunk = _newCoveredChunks[i];
 				if (_coveredChunks.indexOf(chunk) == -1)
 				{
 					chunk.addElement(this);
-					enteredChunk = true;
+					changes |= ENTERED_CHUNK;
 				}
 			}
 
@@ -305,6 +309,20 @@ package ch.adolio.deactivator
 			_coveredChunks.length = 0;
 			while (_newCoveredChunks.length > 0)
 				_coveredChunks.push(_newCoveredChunks.pop());
+
+			return changes;
+		}
+
+		private function update():void
+		{
+			// Only update if the deactivator is active
+			if (!_deactivator.isEnable)
+				return;
+
+			var changes:int = updateCoveredChunks();
+			var leftChunk:Boolean = (changes & LEFT_CHUNK) != 0;
+			var enteredChunk:Boolean = (changes & ENTERED_CHUNK) != 0;
+			var i:int;
 
 			// If non-activity bridge, just check new covered chunks activity
 			if (!_isActivityBridge)
