@@ -91,6 +91,10 @@ package ch.adolio.deactivator
 			_activeArea.setTo(area.x, area.y, area.width, area.height);
 			_activeAreaUpdated = true;
 
+			// update debugging when deactivator is disabled
+			if (!_isEnable)
+				updateActiveAreaDebugQuad();
+
 			// Update chunks directly if cooldown is over
 			if (_activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
 				refreshChunksActivity();
@@ -220,6 +224,8 @@ package ch.adolio.deactivator
 		 *
 		 * Anyway sometimes it could be useful to request a manual update to force the deactivator
 		 * to refresh the connected chunks that's why the method has a public scope.
+		 *
+		 * Does nothing while the deactivator is disabled.
 		 */
 		public function updateChunksActivity():void
 		{
@@ -257,9 +263,15 @@ package ch.adolio.deactivator
 		 *
 		 * Internal code must call this method instead of <code>updateChunksActivity()</code>, since it may
 		 * run while chunks or elements are being iterated.
+		 *
+		 * Does nothing while disabled: everything stays active, and a pending active area update is kept
+		 * for when the deactivator is enabled again.
 		 */
 		internal function refreshChunksActivity():void
 		{
+			if (!_isEnable)
+				return;
+
 			// Reset invalidation & cooldown
 			_activeAreaTimeSinceLastUpdate = 0;
 			_activeAreaUpdated = false;
