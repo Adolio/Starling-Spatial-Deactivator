@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns="http://ns.adobe.com/air/application/33.1">
+  <id>Starling-Spatial-Deactivator-Test</id>
+  <versionLabel>0.1</versionLabel>
+  <versionNumber>0.1</versionNumber>
+  <filename>Starling-Spatial-Deactivator-Test</filename>
+  <name>Starling-Spatial-Deactivator-Test</name>
+  <architecture>64</architecture>
+  <initialWindow>
+    <title>Starling-Spatial-Deactivator-Test</title>
+    <content>Starling-Spatial-Deactivator-Test.swf</content>
+    <systemChrome>standard</systemChrome>
+    <transparent>false</transparent>
+    <visible>false</visible>
+  </initialWindow>
+  <supportedProfiles>desktop extendedDesktop</supportedProfiles>
+  <copyright>Copyright (c) 2017-2026 Aurelien Da Campo, All Rights Reserved.</copyright>
+</application>

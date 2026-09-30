@@ -1,0 +1,22 @@
+{
+	"config": "air",
+	"mainClass": "ch.adolio.deactivator.test.TestMain",
+	"application": "application.xml",
+	"compilerOptions": {
+		"output": "bin/Starling-Spatial-Deactivator-Test.swf",
+		"library-path": [
+			"../lib"
+		],
+		"source-path": [
+			"src",
+			"../src"
+		],
+		"swf-version": 44,
+		"default-background-color": "#000000",
+		"default-frame-rate": 60,
+		"default-size": {
+			"width": 800,
+			"height": 480
+		}
+	}
+}
