@@ -35,6 +35,7 @@ package ch.adolio.deactivator.test
 		private function setupTests():void
 		{
 			_testsRunner.addTest(new ActivityTest());
+			_testsRunner.addTest(new LifecycleTest());
 		}
 
 		private function printResults(testsResult:TestsResult):void

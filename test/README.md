@@ -29,3 +29,4 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 | Test | Covered behavior |
 |------|------------------|
 | `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges |
+| `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification & deactivator reuse after `clear()` |
