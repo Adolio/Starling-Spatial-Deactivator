@@ -388,7 +388,10 @@ package ch.adolio.deactivator
 		internal function removeElement(element:SpatialElement):void
 		{
 			remove(element);
-			_elements.removeAt(_elements.indexOf(element));
+
+			var index:int = _elements.indexOf(element);
+			if (index != -1)
+				_elements.removeAt(index);
 		}
 
 		internal function getChunksTouchedBy(aabb:Rectangle, output:Vector.<SpatialChunk>):Vector.<SpatialChunk>

@@ -137,7 +137,9 @@ package ch.adolio.deactivator
 
 		internal function removeElement(value:SpatialElement):void
 		{
-			_elements.removeAt(_elements.indexOf(value));
+			var index:int = _elements.indexOf(value);
+			if (index != -1)
+				_elements.removeAt(index);
 
 			// TODO Add param to force check activity (if active, still active?).
 		}
