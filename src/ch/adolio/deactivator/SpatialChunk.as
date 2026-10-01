@@ -131,8 +131,6 @@ package ch.adolio.deactivator
 		{
 			if (_elements.indexOf(value) == -1)
 				_elements.push(value);
-
-			// TODO Add param to force check activity (if not active, now active?).
 		}
 
 		internal function removeElement(value:SpatialElement):void
@@ -140,8 +138,6 @@ package ch.adolio.deactivator
 			var index:int = _elements.indexOf(value);
 			if (index != -1)
 				_elements.removeAt(index);
-
-			// TODO Add param to force check activity (if active, still active?).
 		}
 
 		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void

@@ -27,6 +27,9 @@ package ch.adolio.deactivator.test
 			testElementDestroyedAfterClear();
 			testClearWithoutNotification();
 			testReuseAfterClear();
+			testLinkingBridgeDestroyed();
+			testLinkingBridgeDestroyedWhileDisabled();
+			testSpanningNonBridgeDestroyed();
 		}
 
 		private function testElementDestroyedTwice():void
@@ -82,6 +85,53 @@ package ch.adolio.deactivator.test
 
 			inside.moveTo(50, 50, 2, 2);
 			inside.assertIsActive(false, "Moved out after clear");
+
+			deactivator.destroy();
+		}
+
+		private function testLinkingBridgeDestroyed():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+
+			// the outside element is only linked to the active area by the bridge, which covers the chunks (1, 0) & (2, 0)
+			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
+			var bridge:ElementProbe = new ElementProbe("bridge", deactivator, 15, 5, 10, 2);
+			outside.assertIsActive(true, "Linked by bridge");
+
+			bridge.element.destroy();
+			outside.assertIsActive(false, "Linking bridge destroyed");
+			outside.assertNotificationsCount(2, "Linking bridge destroyed");
+
+			deactivator.destroy();
+		}
+
+		private function testLinkingBridgeDestroyedWhileDisabled():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
+			var bridge:ElementProbe = new ElementProbe("bridge", deactivator, 15, 5, 10, 2);
+
+			deactivator.isEnable = false;
+			bridge.element.destroy();
+			outside.assertIsActive(true, "Linking bridge destroyed while disabled");
+
+			deactivator.isEnable = true;
+			outside.assertIsActive(false, "Enabled after linking bridge destroyed");
+
+			deactivator.destroy();
+		}
+
+		private function testSpanningNonBridgeDestroyed():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			var inside:ElementProbe = new ElementProbe("inside element", deactivator, 5, 5, 2, 2);
+			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
+			var nonBridge:ElementProbe = new ElementProbe("non-bridge", deactivator, 15, 5, 10, 2, false);
+
+			nonBridge.element.destroy();
+			inside.assertIsActive(true, "Spanning non-bridge destroyed");
+			outside.assertIsActive(false, "Spanning non-bridge destroyed");
+			inside.assertNotificationsCount(1, "Spanning non-bridge destroyed");
 
 			deactivator.destroy();
 		}

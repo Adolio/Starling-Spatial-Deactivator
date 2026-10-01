@@ -110,9 +110,9 @@ package ch.adolio.deactivator
 		 */
 		public function clear():void
 		{
-			// destroy elements before chunks, each element unregisters itself from its covered chunks & from the list
+			// release elements before chunks, each element unregisters itself from its covered chunks & from the list
 			while (_elements.length > 0)
-				_elements[_elements.length - 1].destroy();
+				_elements[_elements.length - 1].release();
 
 			purge();
 

@@ -123,6 +123,27 @@ package ch.adolio.deactivator
 			if (!_deactivator)
 				return;
 
+			// an active bridge covering several chunks may be the only link keeping some of them active
+			var deactivator:SpatialDeactivator = _deactivator;
+			var mayBreakActivityLinks:Boolean = _isActive && _isActivityBridge && _coveredChunks.length > 1;
+
+			release();
+
+			if (mayBreakActivityLinks)
+			{
+				deactivator.refreshChunksActivity();
+				deactivator.dispatchActivityChanges();
+			}
+		}
+
+		/**
+		 * Unregisters the element from its deactivator & its chunks, without updating the activity of the context.
+		 */
+		internal function release():void
+		{
+			if (!_deactivator)
+				return;
+
 			_deactivator.removeElement(this);
 
 			// Remove elements from covered chunks
