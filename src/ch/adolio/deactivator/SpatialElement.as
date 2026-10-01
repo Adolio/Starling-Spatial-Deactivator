@@ -203,7 +203,7 @@ package ch.adolio.deactivator
 					// If the element is now an active bridge, it could now transfer its activity.
 					// In that case it's necessary to activate all touched chunks.
 					for (var i:uint = 0; i < _coveredChunks.length; ++i)
-						_coveredChunks[i].activate(true);
+						_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
 				}
 				// ...and stop being a bridge
 				else
@@ -361,7 +361,7 @@ package ch.adolio.deactivator
 				if (_isActive)
 				{
 					for (i = 0; i < _coveredChunks.length; ++i)
-						_coveredChunks[i].activate(true);
+						_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
 				}
 				// If the element is inactive, it could enter in an active chunk and propagate activity
 				else
@@ -433,6 +433,12 @@ package ch.adolio.deactivator
 			}
 		}
 
+		/**
+		 * Adds the covered chunks missing from the list, if the element is an activity bridge.
+		 *
+		 * The added chunks are not walked: the caller walks the list while it grows, which reaches the chunks linked
+		 * to them without recursion.
+		 */
 		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void
 		{
 			// Only activity bridge are linking chunks
@@ -442,16 +448,8 @@ package ch.adolio.deactivator
 			for (var i:int = 0; i < _coveredChunks.length; ++i)
 			{
 				var chunk:SpatialChunk = _coveredChunks[i];
-
-				// Add only unpresent chunk
 				if (chunks.indexOf(chunk) == -1)
-				{
-					// Add the chunk
 					chunks.push(chunk);
-
-					// Recursively add linked chunks
-					chunk.fillListWithLinkedChunks(chunks);
-				}
 			}
 		}
 
@@ -473,7 +471,7 @@ package ch.adolio.deactivator
 			if (_isActivityBridge && propagate)
 			{
 				for (var i:int = 0; i < _coveredChunks.length; ++i)
-					_coveredChunks[i].activate(true);
+					_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
 			}
 
 			queueActivityChange();

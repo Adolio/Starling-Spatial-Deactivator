@@ -39,6 +39,7 @@ package ch.adolio.deactivator.test
 			_testsRunner.addTest(new ReentrancyTest());
 			_testsRunner.addTest(new CallbackTest());
 			_testsRunner.addTest(new EnablingTest());
+			_testsRunner.addTest(new BridgeChainTest());
 		}
 
 		private function printResults(testsResult:TestsResult):void

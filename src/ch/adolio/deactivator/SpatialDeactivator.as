@@ -57,6 +57,10 @@ package ch.adolio.deactivator
 		// registered elements
 		private var _elements:Vector.<SpatialElement> = new Vector.<SpatialElement>();
 
+		// activity propagation
+		private var _chunksToActivate:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
+		private var _isPropagatingActivity:Boolean = false;
+
 		// activity changes dispatch
 		private var _elementsWithPendingActivityChange:Vector.<SpatialElement> = new Vector.<SpatialElement>();
 		private var _isDispatchingActivityChanges:Boolean = false;
@@ -302,7 +306,7 @@ package ch.adolio.deactivator
 			// Get the chunks touched by the new active area
 			_activeChunks = getChunksTouchedBy(_activeArea, _activeChunks);
 
-			// Find (recursively) all the connected chunks
+			// Find all the connected chunks, the list growing while being walked
 			for (var i:int = 0; i < _activeChunks.length; ++i)
 			{
 				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
@@ -327,6 +331,29 @@ package ch.adolio.deactivator
 				_chunksToDeactivate[i].deactivate(false);
 
 			_chunksToDeactivate.length = 0;
+		}
+
+		/**
+		 * Activates the chunk & propagates the activity through the activity bridges it contains.
+		 *
+		 * The propagation is iterative, so that long chains of bridges cannot overflow the stack: chunks reached while
+		 * propagating are queued & activated by the ongoing loop.
+		 */
+		internal function activateChunkWithPropagation(chunk:SpatialChunk):void
+		{
+			if (chunk.isActive)
+				return;
+
+			_chunksToActivate.push(chunk);
+
+			if (_isPropagatingActivity)
+				return;
+
+			_isPropagatingActivity = true;
+			while (_chunksToActivate.length > 0)
+				_chunksToActivate.pop().activate(true);
+
+			_isPropagatingActivity = false;
 		}
 
 		internal function queueActivityChange(element:SpatialElement):void
