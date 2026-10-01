@@ -29,6 +29,7 @@ package ch.adolio.deactivator.test
 			testActiveAreaMoving();
 			testBridgePropagation();
 			testNonBridgeNoPropagation();
+			testSpanningElementWithChunksSwapped();
 		}
 
 		private function testElementInsideActiveArea():void
@@ -108,6 +109,20 @@ package ch.adolio.deactivator.test
 
 			nonBridge.assertIsActive(true, "Non-bridge propagation");
 			outside.assertIsActive(false, "Non-bridge propagation");
+
+			deactivator.destroy();
+		}
+
+		private function testSpanningElementWithChunksSwapped():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+
+			// the non-bridge covers the chunks (1, 0) & (2, 0): moving the active area by one chunk swaps their activity
+			var nonBridge:ElementProbe = new ElementProbe("non-bridge", deactivator, 15, 5, 10, 2, false);
+			deactivator.updateActiveArea(new Rectangle(20, 0, 20, 20));
+
+			nonBridge.assertIsActive(true, "Covered chunks swapped");
+			nonBridge.assertNotificationsCount(1, "Covered chunks swapped");
 
 			deactivator.destroy();
 		}

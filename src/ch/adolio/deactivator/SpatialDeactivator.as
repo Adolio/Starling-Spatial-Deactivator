@@ -46,6 +46,7 @@ package ch.adolio.deactivator
 		private var _chunkHeight:Number = 128;
 		private var _chunksX:Dictionary = new Dictionary(); // Dictionary (X) of Dictionaries (Y)
 		private var _activeChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
+		private var _chunksToDeactivate:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
 
 		// Active area
 		private var _activeArea:Rectangle;
@@ -307,25 +308,25 @@ package ch.adolio.deactivator
 				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
 			}
 
-			// Update only the old & new chunk activity
+			// Activate chunks not yet active first, so that an element covering both a newly active chunk & a newly
+			// inactive one stays active instead of being deactivated then reactivated
 			for each (var chunksY:Dictionary in _chunksX)
 			{
 				for each (var chunk:SpatialChunk in chunksY)
 				{
 					var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
-
-					// Activate chunks not yet active
 					if (inNewActiveChunks && !chunk.isActive)
-					{
 						chunk.activate(false);
-					}
-					// Deactivate chunks not anymore active
 					else if (!inNewActiveChunks && chunk.isActive)
-					{
-						chunk.deactivate(false);
-					}
+						_chunksToDeactivate.push(chunk);
 				}
 			}
+
+			// Deactivate chunks not anymore active
+			for (i = 0; i < _chunksToDeactivate.length; ++i)
+				_chunksToDeactivate[i].deactivate(false);
+
+			_chunksToDeactivate.length = 0;
 		}
 
 		internal function queueActivityChange(element:SpatialElement):void
