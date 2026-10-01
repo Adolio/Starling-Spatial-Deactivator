@@ -17,12 +17,10 @@ package ch.adolio.deactivator.test
 	/**
 	 * Activity of elements entering & leaving the active area, directly or through activity bridges.
 	 *
-	 * Chunks are 10 x 10 and the active area starts over the chunks (0, 0) to (1, 1).
+	 * Deactivators come from <code>DeactivatorFactory</code>: 10 x 10 chunks & active area starting over the chunks (0, 0) to (1, 1).
 	 */
 	public class ActivityTest implements ITest
 	{
-		private static const CHUNK_SIZE:Number = 10;
-
 		public function execute():void
 		{
 			testElementInsideActiveArea();
@@ -35,7 +33,7 @@ package ch.adolio.deactivator.test
 
 		private function testElementInsideActiveArea():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 			var element:ElementProbe = new ElementProbe("element", deactivator, 5, 5, 2, 2);
 
 			element.assertIsActive(true, "Inside active area");
@@ -46,7 +44,7 @@ package ch.adolio.deactivator.test
 
 		private function testElementOutsideActiveArea():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 			var element:ElementProbe = new ElementProbe("element", deactivator, 50, 50, 2, 2);
 
 			element.assertIsActive(false, "Outside active area");
@@ -57,7 +55,7 @@ package ch.adolio.deactivator.test
 
 		private function testElementMovingOutAndBack():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 			var element:ElementProbe = new ElementProbe("element", deactivator, 5, 5, 2, 2);
 
 			element.moveTo(50, 50, 2, 2);
@@ -72,7 +70,7 @@ package ch.adolio.deactivator.test
 
 		private function testActiveAreaMoving():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 			var left:ElementProbe = new ElementProbe("left element", deactivator, 5, 5, 2, 2);
 			var right:ElementProbe = new ElementProbe("right element", deactivator, 45, 45, 2, 2);
 
@@ -85,7 +83,7 @@ package ch.adolio.deactivator.test
 
 		private function testBridgePropagation():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 
 			// the outside element is only linked to the active area by the bridge, which covers the chunks (1, 0) & (2, 0)
 			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
@@ -104,7 +102,7 @@ package ch.adolio.deactivator.test
 
 		private function testNonBridgeNoPropagation():void
 		{
-			var deactivator:SpatialDeactivator = createDeactivator();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
 			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
 			var nonBridge:ElementProbe = new ElementProbe("non-bridge", deactivator, 15, 5, 10, 2, false);
 
@@ -112,14 +110,6 @@ package ch.adolio.deactivator.test
 			outside.assertIsActive(false, "Non-bridge propagation");
 
 			deactivator.destroy();
-		}
-
-		private function createDeactivator():SpatialDeactivator
-		{
-			var deactivator:SpatialDeactivator = new SpatialDeactivator(CHUNK_SIZE, CHUNK_SIZE);
-			deactivator.activeAreaUpdateCooldown = 0;
-			deactivator.updateActiveArea(new Rectangle(0, 0, 20, 20));
-			return deactivator;
 		}
 	}
 }

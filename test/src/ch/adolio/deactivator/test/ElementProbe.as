@@ -27,6 +27,7 @@ package ch.adolio.deactivator.test
 		// notifications
 		private var _isNotifiedActive:Boolean = false;
 		private var _notificationsCount:int = 0;
+		private var _reaction:Function;
 
 		public function ElementProbe(name:String, deactivator:SpatialDeactivator, x:Number, y:Number, width:Number, height:Number, isActivityBridge:Boolean = true)
 		{
@@ -60,12 +61,29 @@ package ch.adolio.deactivator.test
 			return _element;
 		}
 
+		public function get reaction():Function
+		{
+			return _reaction;
+		}
+
+		/**
+		 * Function called from the activity callback, after the notification is recorded.
+		 * Prototype: function(isActive:Boolean):void
+		 */
+		public function set reaction(value:Function):void
+		{
+			_reaction = value;
+		}
+
 		private function onActivityChanged(isActive:Boolean):void
 		{
 			Assert.isTrue(isActive != _isNotifiedActive, _name + " was notified of an unchanged activity");
 
 			_isNotifiedActive = isActive;
 			_notificationsCount++;
+
+			if (_reaction != null)
+				_reaction(isActive);
 		}
 	}
 }

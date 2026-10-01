@@ -19,9 +19,10 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 
 ## Writing Tests
 
-- Use `ElementProbe` to create elements: it has no update cooldown and records the activity notifications, failing
-  the test when an unchanged activity is notified
-- Use a deactivator without active area update cooldown, so that each update is processed right away
+- Create deactivators with `DeactivatorFactory`: no active area update cooldown, so that each update is processed
+  right away
+- Create elements with `ElementProbe`: no update cooldown, records the activity notifications & fails the test when
+  an unchanged activity is notified; its `reaction` acts from the activity callback
 - Destroy the deactivator at the end of each scenario
 
 ## Coverage
@@ -30,3 +31,6 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 |------|------------------|
 | `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges |
 | `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification & deactivator reuse after `clear()` |
+| `ReentrancyTest` | Activity callbacks destroying their own element or another one, creating elements & moving another element |
+| `CallbackTest` | Activity callback set after the element creation: while disabled, on an active or inactive element & replaced |
+| `EnablingTest` | No deactivation while disabled, re-enabling after elements or the active area moved & after elements were created |
