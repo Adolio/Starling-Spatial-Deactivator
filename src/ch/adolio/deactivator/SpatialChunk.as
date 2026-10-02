@@ -80,8 +80,8 @@ package ch.adolio.deactivator
 				_debugQuad.alpha = _ACTIVE_ALPHA; // Graphics debug
 
 			// Update touched elements
-			var elementsCount:Number = _elements.length;
-			for (var i:uint = 0; i < elementsCount; ++i)
+			var elementsCount:int = _elements.length;
+			for (var i:int = 0; i < elementsCount; ++i)
 				_elements[i].activate(propagate);
 		}
 
@@ -97,8 +97,8 @@ package ch.adolio.deactivator
 				_debugQuad.alpha = _INACTIVE_ALPHA; // Graphics debug
 
 			// Update touched elements
-			var elementsCount:Number = _elements.length;
-			for (var i:uint = 0; i < elementsCount; ++i) {
+			var elementsCount:int = _elements.length;
+			for (var i:int = 0; i < elementsCount; ++i) {
 				_elements[i].checkActivityFromCoveredChunks(propagate);
 			}
 		}
@@ -156,8 +156,8 @@ package ch.adolio.deactivator
 
 		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>, stamp:uint):void
 		{
-			var length:Number = _elements.length;
-			for (var i:uint = 0; i < length; ++i)
+			var length:int = _elements.length;
+			for (var i:int = 0; i < length; ++i)
 			{
 				_elements[i].fillListWithLinkedChunks(chunks, stamp);
 			}

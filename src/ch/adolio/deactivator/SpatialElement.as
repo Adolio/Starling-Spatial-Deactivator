@@ -207,7 +207,7 @@ package ch.adolio.deactivator
 				{
 					// If the element is now an active bridge, it could now transfer its activity.
 					// In that case it's necessary to activate all touched chunks.
-					for (var i:uint = 0; i < _coveredChunks.length; ++i)
+					for (var i:int = 0; i < _coveredChunks.length; ++i)
 						_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
 				}
 				// ...and stop being a bridge
@@ -274,7 +274,6 @@ package ch.adolio.deactivator
 				_debugQuad.y = _aabb.y;
 				_debugQuad.width = _aabb.width;
 				_debugQuad.height = _aabb.height;
-				_deactivator.debugSprite.addChild(_debugQuad); // Move on top
 			}
 		}
 
