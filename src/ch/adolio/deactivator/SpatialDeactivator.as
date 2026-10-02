@@ -451,10 +451,20 @@ package ch.adolio.deactivator
 
 			// chunks are only created for elements, so the ones over the active area, or created while disabled, must
 			// start active for the entering elements to be activated
-			if (!_isEnable || _activeAreaChunksRange.contains(chunkX, chunkY))
+			if (!_isEnable || isChunkOverActiveArea(chunk))
 				activateChunk(chunk, false);
 
 			return chunk;
+		}
+
+		/**
+		 * Tells if the chunk is touched by the active area, as of the last refresh of the chunks activity.
+		 *
+		 * Such a chunk is active whatever the elements it contains.
+		 */
+		internal function isChunkOverActiveArea(chunk:SpatialChunk):Boolean
+		{
+			return _activeAreaChunksRange.contains(chunk.gridX, chunk.gridY);
 		}
 
 		/**

@@ -37,6 +37,7 @@ package ch.adolio.deactivator.test
 			_testsRunner.addTest(new ActivityTest());
 			_testsRunner.addTest(new LifecycleTest());
 			_testsRunner.addTest(new ChunksTest());
+			_testsRunner.addTest(new RefreshTest());
 			_testsRunner.addTest(new ReentrancyTest());
 			_testsRunner.addTest(new CallbackTest());
 			_testsRunner.addTest(new EnablingTest());

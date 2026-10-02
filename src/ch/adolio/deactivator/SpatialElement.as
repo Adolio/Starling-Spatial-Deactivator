@@ -35,6 +35,7 @@ package ch.adolio.deactivator
 		// covered chunks changes
 		internal static const ENTERED_CHUNK:int = 1;
 		internal static const LEFT_CHUNK:int = 2;
+		internal static const LEFT_CHUNK_OUT_OF_ACTIVE_AREA:int = 4;
 
 		// Spatial deactivation
 		private var _deactivator:SpatialDeactivator;
@@ -289,7 +290,8 @@ package ch.adolio.deactivator
 		/**
 		 * Moves the element into the chunks covered by its AABB, without updating any activity.
 		 *
-		 * @return the changes, as a combination of the <code>ENTERED_CHUNK</code> & <code>LEFT_CHUNK</code> flags
+		 * @return the changes, as a combination of the <code>ENTERED_CHUNK</code>, <code>LEFT_CHUNK</code> &
+		 *         <code>LEFT_CHUNK_OUT_OF_ACTIVE_AREA</code> flags
 		 */
 		internal function updateCoveredChunks():int
 		{
@@ -314,9 +316,12 @@ package ch.adolio.deactivator
 				chunk = _coveredChunks[i];
 				if (_newCoveredChunks.indexOf(chunk) == -1)
 				{
+					changes |= LEFT_CHUNK;
+					if (!_deactivator.isChunkOverActiveArea(chunk))
+						changes |= LEFT_CHUNK_OUT_OF_ACTIVE_AREA;
+
 					chunk.removeElement(this);
 					_deactivator.freeChunkIfUnused(chunk);
-					changes |= LEFT_CHUNK;
 				}
 			}
 
@@ -359,19 +364,12 @@ package ch.adolio.deactivator
 			}
 
 			// Activity bridge:
-			// Enter a new chunk but did not left another
-			if (enteredChunk && !leftChunk)
+			// An inactive bridge only covered inactive chunks, so leaving them cannot break any activity link.
+			// It could enter in an active chunk and propagate activity.
+			if (!_isActive)
 			{
-				// If the element is active, all covered chunks must be active too
-				if (_isActive)
+				if (enteredChunk)
 				{
-					for (i = 0; i < _coveredChunks.length; ++i)
-						_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
-				}
-				// If the element is inactive, it could enter in an active chunk and propagate activity
-				else
-				{
-					// Check activity of new covered chunks and active element (with propagation) if one chunk is active
 					for (i = 0; i < _coveredChunks.length; ++i)
 					{
 						if (_coveredChunks[i].isActive)
@@ -381,34 +379,35 @@ package ch.adolio.deactivator
 						}
 					}
 				}
+
+				return;
 			}
-			// Left a chunk but did not enter another (it was a bridge element)
-			else if (!enteredChunk && leftChunk)
+
+			// An active bridge leaving chunks could break the activity links going through them and become inactive.
+			// In that case it's necessary to re-check all the activity propagation, unless the active area keeps
+			// active by itself both the left chunks and the element.
+			if (leftChunk && ((changes & LEFT_CHUNK_OUT_OF_ACTIVE_AREA) != 0 || !isCoveringActiveArea()))
 			{
-				// If the element was an active bridge, it could break the activity branch and become inactive
-				// In that case it's necessary to re-check all the activity propagation.
-				if (_isActive)
-				{
-					_deactivator.refreshChunksActivity();
-				}
-				// If the element was inactive (was a bridge between two inactive chunks)
-				else
-				{
-					// Nothing to do, the element left an inactive chunk to another.
-				}
-			}
-			// Left a chunk and entered into a new one (teleportation)
-			else if (enteredChunk && leftChunk)
-			{
-				// If the element was an active bridge, it could break the activity tree and become inactive
-				// In that case it's necessary to re-check all the activity propagation.
 				_deactivator.refreshChunksActivity();
 				checkActivityFromCoveredChunks(false);
 			}
-			else
+			// The element stays active, all covered chunks must be active too
+			else if (enteredChunk)
 			{
-				// If the element didn't leave a chunk & didn't enter a chunk, there is nothing to do.
+				for (i = 0; i < _coveredChunks.length; ++i)
+					_deactivator.activateChunkWithPropagation(_coveredChunks[i]);
 			}
+		}
+
+		private function isCoveringActiveArea():Boolean
+		{
+			for (var i:int = 0; i < _coveredChunks.length; ++i)
+			{
+				if (_deactivator.isChunkOverActiveArea(_coveredChunks[i]))
+					return true;
+			}
+
+			return false;
 		}
 
 		/** Check if element must be active according to covered chunks */
