@@ -46,7 +46,10 @@ package ch.adolio.deactivator
 		private var _chunkHeight:Number = 128;
 		private var _chunksX:Dictionary = new Dictionary(); // Dictionary (X) of Dictionaries (Y)
 		private var _activeChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
-		private var _chunksToDeactivate:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
+
+		// links to the active area
+		private var _linkedChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
+		private var _linkStamp:uint = 0;
 
 		// Active area
 		private var _activeArea:Rectangle;
@@ -123,6 +126,7 @@ package ch.adolio.deactivator
 
 			// clear chunks
 			_activeChunks.length = 0;
+			_linkedChunks.length = 0;
 			for (var xKey:int in _chunksX)
 			{
 				var chunksY:Dictionary = _chunksX[xKey];
@@ -158,6 +162,7 @@ package ch.adolio.deactivator
 			// Nullify references
 			_activeArea = null;
 			_activeChunks = null;
+			_linkedChunks = null;
 			_chunksX = null;
 			_activeAreaDebugQuad = null;
 			_debugSprite = null;
@@ -231,7 +236,7 @@ package ch.adolio.deactivator
 			{
 				for each (var chunk:SpatialChunk in chunksY)
 				{
-					chunk.activate(false);
+					activateChunk(chunk, false);
 				}
 			}
 
@@ -303,34 +308,49 @@ package ch.adolio.deactivator
 			// Update debug
 			updateActiveAreaDebugQuad();
 
-			// Get the chunks touched by the new active area
-			_activeChunks = getChunksTouchedBy(_activeArea, _activeChunks);
+			// Get the chunks touched by the new active area, stamped so that a linked chunk is recognized in constant time
+			_linkStamp++;
+			getChunksTouchedBy(_activeArea, _linkedChunks);
+			var i:int;
+			for (i = 0; i < _linkedChunks.length; ++i)
+				_linkedChunks[i].linkStamp = _linkStamp;
 
 			// Find all the connected chunks, the list growing while being walked
-			for (var i:int = 0; i < _activeChunks.length; ++i)
+			for (i = 0; i < _linkedChunks.length; ++i)
+				_linkedChunks[i].fillListWithLinkedChunks(_linkedChunks, _linkStamp);
+
+			// Activate linked chunks not yet active first, so that an element covering both a newly active chunk & a
+			// newly inactive one stays active instead of being deactivated then reactivated
+			for (i = 0; i < _linkedChunks.length; ++i)
+				activateChunk(_linkedChunks[i], false);
+
+			// Deactivate active chunks not linked anymore
+			for (i = 0; i < _activeChunks.length; ++i)
 			{
-				_activeChunks[i].fillListWithLinkedChunks(_activeChunks);
+				if (_activeChunks[i].linkStamp != _linkStamp)
+					_activeChunks[i].deactivate(false);
 			}
 
-			// Activate chunks not yet active first, so that an element covering both a newly active chunk & a newly
-			// inactive one stays active instead of being deactivated then reactivated
-			for each (var chunksY:Dictionary in _chunksX)
-			{
-				for each (var chunk:SpatialChunk in chunksY)
-				{
-					var inNewActiveChunks:Boolean = _activeChunks.indexOf(chunk) != -1;
-					if (inNewActiveChunks && !chunk.isActive)
-						chunk.activate(false);
-					else if (!inNewActiveChunks && chunk.isActive)
-						_chunksToDeactivate.push(chunk);
-				}
-			}
+			// the linked chunks are now exactly the active ones
+			var previousActiveChunks:Vector.<SpatialChunk> = _activeChunks;
+			_activeChunks = _linkedChunks;
+			_linkedChunks = previousActiveChunks;
+			_linkedChunks.length = 0;
+		}
 
-			// Deactivate chunks not anymore active
-			for (i = 0; i < _chunksToDeactivate.length; ++i)
-				_chunksToDeactivate[i].deactivate(false);
+		/**
+		 * Activates the chunk & records it in the active chunks.
+		 *
+		 * Every chunk activation must go through this method: chunks are only deactivated by
+		 * <code>refreshChunksActivity()</code>, which only visits the recorded active chunks to find the ones to deactivate.
+		 */
+		private function activateChunk(chunk:SpatialChunk, propagate:Boolean):void
+		{
+			if (chunk.isActive)
+				return;
 
-			_chunksToDeactivate.length = 0;
+			_activeChunks.push(chunk);
+			chunk.activate(propagate);
 		}
 
 		/**
@@ -351,7 +371,7 @@ package ch.adolio.deactivator
 
 			_isPropagatingActivity = true;
 			while (_chunksToActivate.length > 0)
-				_chunksToActivate.pop().activate(true);
+				activateChunk(_chunksToActivate.pop(), true);
 
 			_isPropagatingActivity = false;
 		}

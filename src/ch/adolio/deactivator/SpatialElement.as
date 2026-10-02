@@ -434,12 +434,13 @@ package ch.adolio.deactivator
 		}
 
 		/**
-		 * Adds the covered chunks missing from the list, if the element is an activity bridge.
+		 * Adds the covered chunks not stamped with the given stamp to the list & stamps them, if the element is an
+		 * activity bridge.
 		 *
 		 * The added chunks are not walked: the caller walks the list while it grows, which reaches the chunks linked
 		 * to them without recursion.
 		 */
-		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void
+		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>, stamp:uint):void
 		{
 			// Only activity bridge are linking chunks
 			if (!_isActivityBridge)
@@ -448,8 +449,11 @@ package ch.adolio.deactivator
 			for (var i:int = 0; i < _coveredChunks.length; ++i)
 			{
 				var chunk:SpatialChunk = _coveredChunks[i];
-				if (chunks.indexOf(chunk) == -1)
+				if (chunk.linkStamp != stamp)
+				{
+					chunk.linkStamp = stamp;
 					chunks.push(chunk);
+				}
 			}
 		}
 

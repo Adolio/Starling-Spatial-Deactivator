@@ -26,6 +26,7 @@ package ch.adolio.deactivator
 		private var _gridY:int;
 		private var _isActive:Boolean = false;
 		private var _elements:Vector.<SpatialElement> = new Vector.<SpatialElement>();
+		private var _linkStamp:uint = 0;
 
 		// Debug mode
 		private var _debugQuad:Quad;
@@ -127,6 +128,19 @@ package ch.adolio.deactivator
 			return _gridY;
 		}
 
+		/**
+		 * Stamp of the last activity refresh which linked the chunk to the active area.
+		 */
+		internal function get linkStamp():uint
+		{
+			return _linkStamp;
+		}
+
+		internal function set linkStamp(value:uint):void
+		{
+			_linkStamp = value;
+		}
+
 		internal function addElement(value:SpatialElement):void
 		{
 			if (_elements.indexOf(value) == -1)
@@ -140,12 +154,12 @@ package ch.adolio.deactivator
 				_elements.removeAt(index);
 		}
 
-		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>):void
+		internal function fillListWithLinkedChunks(chunks:Vector.<SpatialChunk>, stamp:uint):void
 		{
 			var length:Number = _elements.length;
 			for (var i:uint = 0; i < length; ++i)
 			{
-				_elements[i].fillListWithLinkedChunks(chunks);
+				_elements[i].fillListWithLinkedChunks(chunks, stamp);
 			}
 		}
 	}
