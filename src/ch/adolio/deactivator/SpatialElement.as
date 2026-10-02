@@ -148,7 +148,11 @@ package ch.adolio.deactivator
 
 			// Remove elements from covered chunks
 			while (_coveredChunks.length > 0)
-				_coveredChunks.pop().removeElement(this);
+			{
+				var chunk:SpatialChunk = _coveredChunks.pop();
+				chunk.removeElement(this);
+				_deactivator.freeChunkIfUnused(chunk);
+			}
 
 			// clear new chunk list
 			_newCoveredChunks.length = 0;
@@ -311,6 +315,7 @@ package ch.adolio.deactivator
 				if (_newCoveredChunks.indexOf(chunk) == -1)
 				{
 					chunk.removeElement(this);
+					_deactivator.freeChunkIfUnused(chunk);
 					changes |= LEFT_CHUNK;
 				}
 			}

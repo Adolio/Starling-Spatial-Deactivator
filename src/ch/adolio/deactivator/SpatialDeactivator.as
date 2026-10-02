@@ -45,6 +45,8 @@ package ch.adolio.deactivator
 		private var _chunkWidth:Number = 128;
 		private var _chunkHeight:Number = 128;
 		private var _chunksX:Dictionary = new Dictionary(); // Dictionary (X) of Dictionaries (Y)
+		private var _chunksCount:int = 0;
+		private var _chunksRange:Rectangle = new Rectangle();
 		private var _activeChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
 
 		// links to the active area
@@ -53,6 +55,7 @@ package ch.adolio.deactivator
 
 		// Active area
 		private var _activeArea:Rectangle;
+		private var _activeAreaChunksRange:Rectangle = new Rectangle();
 		private var _activeAreaUpdated:Boolean = false;
 		private var _activeAreaUpdateCooldown:Number = 1.0 / 10.0; // sec
 		private var _activeAreaTimeSinceLastUpdate:Number = Number.MAX_VALUE; // sec, make sure that the first update happens right away.
@@ -140,8 +143,11 @@ package ch.adolio.deactivator
 				delete _chunksX[xKey];
 			}
 
+			_chunksCount = 0;
+
 			// clear active area
 			_activeArea.setTo(0, 0, 1, 1);
+			_activeAreaChunksRange.setEmpty();
 			_activeAreaUpdated = false;
 			_activeAreaTimeSinceLastUpdate = Number.MAX_VALUE; // make sure that the next update happens right away.
 
@@ -181,6 +187,17 @@ package ch.adolio.deactivator
 		public function get debugSprite():Sprite
 		{
 			return _debugSprite;
+		}
+
+		/**
+		 * Number of allocated chunks, for monitoring purposes.
+		 *
+		 * Only the chunks containing elements are kept, plus the empty ones still active until the next refresh of the
+		 * chunks activity.
+		 */
+		public function get chunksCount():int
+		{
+			return _chunksCount;
 		}
 
 		public function get activeAreaUpdateCooldown():Number
@@ -308,9 +325,11 @@ package ch.adolio.deactivator
 			// Update debug
 			updateActiveAreaDebugQuad();
 
-			// Get the chunks touched by the new active area, stamped so that a linked chunk is recognized in constant time
+			// Get the existing chunks touched by the new active area, stamped so that a linked chunk is recognized in
+			// constant time. Missing chunks contain no element & are activated when created.
 			_linkStamp++;
-			getChunksTouchedBy(_activeArea, _linkedChunks);
+			computeChunksRange(_activeArea, _activeAreaChunksRange);
+			getChunksTouchedBy(_activeArea, _linkedChunks, false);
 			var i:int;
 			for (i = 0; i < _linkedChunks.length; ++i)
 				_linkedChunks[i].linkStamp = _linkStamp;
@@ -327,8 +346,12 @@ package ch.adolio.deactivator
 			// Deactivate active chunks not linked anymore
 			for (i = 0; i < _activeChunks.length; ++i)
 			{
-				if (_activeChunks[i].linkStamp != _linkStamp)
-					_activeChunks[i].deactivate(false);
+				var chunk:SpatialChunk = _activeChunks[i];
+				if (chunk.linkStamp != _linkStamp)
+				{
+					chunk.deactivate(false);
+					freeChunkIfUnused(chunk);
+				}
 			}
 
 			// the linked chunks are now exactly the active ones
@@ -422,9 +445,42 @@ package ch.adolio.deactivator
 		{
 			var chunk:SpatialChunk = new SpatialChunk(this, chunkX, chunkY, _debugSprite != null);
 			setChunk(chunkX, chunkY, chunk);
+			_chunksCount++;
 			if(_debugSprite && chunk.debugQuad)
 				_debugSprite.addChildAt(chunk.debugQuad, 0);
+
+			// chunks are only created for elements, so the ones over the active area, or created while disabled, must
+			// start active for the entering elements to be activated
+			if (!_isEnable || _activeAreaChunksRange.contains(chunkX, chunkY))
+				activateChunk(chunk, false);
+
 			return chunk;
+		}
+
+		/**
+		 * Frees the chunk if it is inactive & contains no element.
+		 *
+		 * A freed chunk is created again when an element enters it, with the activity it would have had.
+		 */
+		internal function freeChunkIfUnused(chunk:SpatialChunk):void
+		{
+			// already freed
+			var chunksY:Dictionary = _chunksX[chunk.gridX];
+			if (!chunksY || chunksY[chunk.gridY] != chunk)
+				return;
+
+			if (chunk.isActive || chunk.elements.length > 0)
+				return;
+
+			delete chunksY[chunk.gridY];
+			chunk.destroy();
+			_chunksCount--;
+
+			// drop the column once its last chunk is freed
+			for (var yKey:* in chunksY)
+				return;
+
+			delete _chunksX[chunk.gridX];
 		}
 
 		internal function addElement(element:SpatialElement):void
@@ -442,16 +498,22 @@ package ch.adolio.deactivator
 				_elements.removeAt(index);
 		}
 
-		internal function getChunksTouchedBy(aabb:Rectangle, output:Vector.<SpatialChunk>):Vector.<SpatialChunk>
+		/**
+		 * Fills the output with the chunks touched by the AABB.
+		 *
+		 * @param createMissingChunks creates the touched chunks not existing yet, otherwise they are skipped
+		 */
+		internal function getChunksTouchedBy(aabb:Rectangle, output:Vector.<SpatialChunk>, createMissingChunks:Boolean = true):Vector.<SpatialChunk>
 		{
 			// Clear output
 			output.length = 0;
 
 			// Find min/max index on each axis
-			var xmin:int = Math.floor(aabb.left / _chunkWidth);
-			var xmax:int = Math.ceil(aabb.right / _chunkWidth);
-			var ymin:int = Math.floor(aabb.top / _chunkHeight);
-			var ymax:int = Math.ceil(aabb.bottom / _chunkHeight);
+			computeChunksRange(aabb, _chunksRange);
+			var xmin:int = _chunksRange.left;
+			var xmax:int = _chunksRange.right;
+			var ymin:int = _chunksRange.top;
+			var ymax:int = _chunksRange.bottom;
 
 			// Generate the list of chunks
 			var chunk:SpatialChunk;
@@ -461,20 +523,42 @@ package ch.adolio.deactivator
 
 				// Create missing dimension Dictionary
 				if (!chunksY)
+				{
+					if (!createMissingChunks)
+						continue;
+
 					_chunksX[ix] = chunksY = new Dictionary();
+				}
 
 				for (var iy:int = ymin; iy < ymax; ++iy)
 				{
 					chunk = chunksY[iy];
 
 					if (!chunk)
+					{
+						if (!createMissingChunks)
+							continue;
+
 						chunk = createChunk(ix, iy);
+					}
 
 					output.push(chunk);
 				}
 			}
 
 			return output;
+		}
+
+		/**
+		 * Computes the range of chunk indices touched by the AABB, the right & bottom bounds being exclusive.
+		 */
+		private function computeChunksRange(aabb:Rectangle, output:Rectangle):void
+		{
+			var xmin:int = Math.floor(aabb.left / _chunkWidth);
+			var xmax:int = Math.ceil(aabb.right / _chunkWidth);
+			var ymin:int = Math.floor(aabb.top / _chunkHeight);
+			var ymax:int = Math.ceil(aabb.bottom / _chunkHeight);
+			output.setTo(xmin, ymin, xmax - xmin, ymax - ymin);
 		}
 
 		internal function getChunk(x:int, y:int):SpatialChunk

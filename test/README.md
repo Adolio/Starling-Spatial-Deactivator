@@ -31,6 +31,7 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 |------|------------------|
 | `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges, element covering chunks whose activity swaps |
 | `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification, deactivator reuse after `clear()` & destruction of an element linking chunks (bridge or not, enabled or disabled) |
+| `ChunksTest` | No chunk allocated for the active area, chunks freed when left, deactivated or cleared, chunk created again in the active area for bridges & non-bridges |
 | `ReentrancyTest` | Activity callbacks destroying their own element or another one, creating elements & moving another element |
 | `CallbackTest` | Activity callback set after the element creation: while disabled, on an active or inactive element & replaced |
 | `BridgeChainTest` | Activity propagation & linked chunks along a chain of 10000 bridges, without stack overflow |
