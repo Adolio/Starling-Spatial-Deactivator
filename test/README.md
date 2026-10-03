@@ -30,12 +30,12 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 | Test | Covered behavior |
 |------|------------------|
 | `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges, element covering chunks whose activity swaps, AABB & active area without width or height on a chunk border |
-| `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification, deactivator reuse after `clear()` & destruction of an element linking chunks (bridge or not, enabled or disabled) |
+| `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification, deactivator reuse after `clear()` & destruction of an element linking chunks (bridge or not, enabled or disabled), deactivator destroyed twice, from an activity callback or while left in a juggler |
 | `ValidationTest` | Rejection of invalid chunk sizes, active areas & AABBs (null, NaN, infinite or negative size) without changing the context, empty rectangles accepted |
 | `ChunksTest` | No chunk allocated for the active area, chunks freed when left, deactivated or cleared, chunk created again in the active area for bridges & non-bridges |
 | `RefreshTest` | Bridge moves which must not refresh all the chunks activity (inactive bridge, active bridge crossing chunks over the active area) & the ones which must (active bridge leaving a chunk out of the active area, or the active area) |
 | `ReentrancyTest` | Activity callbacks destroying their own element or another one, creating elements & moving another element |
 | `CallbackTest` | Activity callback set after the element creation: while disabled, on an active or inactive element & replaced |
 | `BridgeChainTest` | Activity propagation & linked chunks along a chain of 10000 bridges, without stack overflow |
-| `DebugRenderingTest` | Quads of the debug sprite when elements are created, moved & destroyed, and when the deactivator is cleared; debug rendering enabled & disabled at runtime with existing chunks & elements |
+| `DebugRenderingTest` | Quads of the debug sprite when elements are created, moved & destroyed, and when the deactivator is cleared; debug rendering enabled & disabled at runtime with existing chunks & elements; debug sprite removed from its parent on destroy |
 | `EnablingTest` | No deactivation while disabled, re-enabling after elements or the active area moved & after elements were created |

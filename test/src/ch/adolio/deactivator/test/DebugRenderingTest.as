@@ -27,6 +27,7 @@ package ch.adolio.deactivator.test
 		{
 			testQuadsFollowContext();
 			testRuntimeToggle();
+			testDebugSpriteRemovedOnDestroy();
 		}
 
 		private function testQuadsFollowContext():void
@@ -92,6 +93,20 @@ package ch.adolio.deactivator.test
 			Assert.equalsInt(deactivator.debugSprite.numChildren, 4, "Active area, 2 chunks & 1 element quads after enabling again");
 
 			deactivator.destroy();
+			parent.dispose();
+		}
+
+		private function testDebugSpriteRemovedOnDestroy():void
+		{
+			var deactivator:SpatialDeactivator = new SpatialDeactivator(DeactivatorFactory.CHUNK_SIZE, DeactivatorFactory.CHUNK_SIZE, true);
+			var parent:Sprite = new Sprite();
+			parent.addChild(deactivator.debugSprite);
+			new ElementProbe("element", deactivator, 5, 5, 2, 2);
+
+			deactivator.destroy();
+			Assert.isTrue(!deactivator.isDebugRenderingEnabled && deactivator.debugSprite == null, "Debug rendering destroyed");
+			Assert.equalsInt(parent.numChildren, 0, "Debug sprite removed from its parent on destroy");
+
 			parent.dispose();
 		}
 

@@ -173,18 +173,33 @@ package ch.adolio.deactivator
 			updateActiveAreaDebugQuad();
 		}
 
+		/**
+		 * Clears the deactivator & releases its resources, the debug rendering included.
+		 *
+		 * The deactivator must not be used afterwards, and it is up to the caller to remove it from its juggler.
+		 * Safe to call more than once.
+		 */
 		public function destroy():void
 		{
+			// already destroyed
+			if (!_chunksX)
+				return;
+
 			clear();
 
 			if (_debugSprite)
 				destroyDebugRendering();
 
-			// Nullify references
+			// Nullify references, except the pending activity changes: the deactivator may be destroyed from an
+			// activity callback, while they are being dispatched
 			_activeArea = null;
+			_activeAreaChunksRange = null;
+			_chunksRange = null;
 			_activeChunks = null;
 			_linkedChunks = null;
+			_chunksToActivate = null;
 			_chunksX = null;
+			_elements = null;
 		}
 
 		public function get chunkWidth():Number

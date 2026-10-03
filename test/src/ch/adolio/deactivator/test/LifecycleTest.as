@@ -13,9 +13,10 @@ package ch.adolio.deactivator.test
 	import ch.adolio.deactivator.SpatialDeactivator;
 	import ch.adolio.test.ITest;
 	import flash.geom.Rectangle;
+	import starling.animation.Juggler;
 
 	/**
-	 * Destruction of elements & clearing of the deactivator.
+	 * Destruction of elements, clearing & destruction of the deactivator.
 	 *
 	 * Deactivators come from <code>DeactivatorFactory</code>: 10 x 10 chunks & active area starting over the chunks (0, 0) to (1, 1).
 	 */
@@ -30,6 +31,9 @@ package ch.adolio.deactivator.test
 			testLinkingBridgeDestroyed();
 			testLinkingBridgeDestroyedWhileDisabled();
 			testSpanningNonBridgeDestroyed();
+			testDeactivatorDestroyedTwice();
+			testDeactivatorDestroyedInJuggler();
+			testDeactivatorDestroyedFromCallback();
 		}
 
 		private function testElementDestroyedTwice():void
@@ -134,6 +138,47 @@ package ch.adolio.deactivator.test
 			inside.assertNotificationsCount(1, "Spanning non-bridge destroyed");
 
 			deactivator.destroy();
+		}
+
+		private function testDeactivatorDestroyedTwice():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			var element:ElementProbe = new ElementProbe("element", deactivator, 5, 5, 2, 2);
+
+			deactivator.destroy();
+			deactivator.destroy();
+
+			element.element.destroy();
+			element.assertNotificationsCount(1, "Deactivator destroyed twice");
+		}
+
+		private function testDeactivatorDestroyedInJuggler():void
+		{
+			var juggler:Juggler = new Juggler();
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			juggler.add(deactivator);
+			new ElementProbe("element", deactivator, 5, 5, 2, 2);
+
+			// a destroyed deactivator left in its juggler must not fail when advanced
+			deactivator.destroy();
+			juggler.advanceTime(1);
+		}
+
+		private function testDeactivatorDestroyedFromCallback():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			var destroyer:ElementProbe = new ElementProbe("destroyer", deactivator, 5, 5, 2, 2);
+			var other:ElementProbe = new ElementProbe("other element", deactivator, 5, 5, 2, 2);
+			destroyer.reaction = function(isActive:Boolean):void
+			{
+				if (!isActive)
+					deactivator.destroy();
+			};
+
+			// the pending deactivation of the other element is dropped
+			deactivator.updateActiveArea(new Rectangle(40, 40, 20, 20));
+			destroyer.assertNotificationsCount(2, "Deactivator destroyed from callback");
+			other.assertNotificationsCount(1, "Deactivator destroyed from callback");
 		}
 	}
 }
