@@ -112,6 +112,15 @@ if(_deactivator.debugSprite)
 	addChild(_deactivator.debugSprite);
 ```
 
+It can also be enabled & disabled at runtime. A new debug sprite is created each time it is enabled:
+
+```actionscript
+_deactivator.isDebugRenderingEnabled = true;
+addChild(_deactivator.debugSprite);
+
+_deactivator.isDebugRenderingEnabled = false; // removes & disposes the debug sprite
+```
+
 ## ⌨️ How to install?
 
 Just clone or download the repository and copy/paste the ```src/ch``` folder into your ```src``` directory or add the ```src/``` folder to your class path.

@@ -40,14 +40,8 @@ package ch.adolio.deactivator
 			_gridY = gridY;
 
 			// Debug mode
-			if (debugRendering) {
-				var marginX:Number = 2.0;
-				var marginY:Number = 2.0;
-				_debugQuad = new Quad(deactivator.chunkWidth - marginX, deactivator.chunkHeight - marginY, _COLOR);
-				_debugQuad.alpha = _INACTIVE_ALPHA;
-				_debugQuad.x = gridX * deactivator.chunkWidth + marginX * 0.5;
-				_debugQuad.y = gridY * deactivator.chunkHeight + marginY * 0.5;
-			}
+			if (debugRendering)
+				createDebugQuad(deactivator);
 		}
 
 		// --------------------------------------------------------------------
@@ -56,16 +50,37 @@ package ch.adolio.deactivator
 
 		internal function destroy():void
 		{
-			// Remove and dispose debug quad
-			if (_debugQuad)
-				_debugQuad.removeFromParent(true);
+			destroyDebugQuad();
 
 			// Clear elements
 			_elements.splice(0, _elements.length);
 
 			// Nullify references
-			_debugQuad = null;
 			_elements = null;
+		}
+
+		/**
+		 * Creates the debug quad, which must be added to the debug sprite by the caller.
+		 */
+		internal function createDebugQuad(deactivator:SpatialDeactivator):Quad
+		{
+			var marginX:Number = 2.0;
+			var marginY:Number = 2.0;
+			_debugQuad = new Quad(deactivator.chunkWidth - marginX, deactivator.chunkHeight - marginY, _COLOR);
+			_debugQuad.alpha = _isActive ? _ACTIVE_ALPHA : _INACTIVE_ALPHA;
+			_debugQuad.x = _gridX * deactivator.chunkWidth + marginX * 0.5;
+			_debugQuad.y = _gridY * deactivator.chunkHeight + marginY * 0.5;
+
+			return _debugQuad;
+		}
+
+		internal function destroyDebugQuad():void
+		{
+			if (!_debugQuad)
+				return;
+
+			_debugQuad.removeFromParent(true);
+			_debugQuad = null;
 		}
 
 		internal function activate(propagate:Boolean):void

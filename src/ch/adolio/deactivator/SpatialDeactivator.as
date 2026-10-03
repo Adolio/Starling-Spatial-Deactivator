@@ -84,12 +84,7 @@ package ch.adolio.deactivator
 
 			// Setup debug
 			if (debugRendering)
-			{
-				_debugSprite = new Sprite();
-				_activeAreaDebugQuad = new Quad(1, 1, 0xffffff);
-				_activeAreaDebugQuad.alpha = 0.3;
-				_debugSprite.addChild(_activeAreaDebugQuad);
-			}
+				createDebugRendering();
 		}
 
 		// --------------------------------------------------------------------
@@ -160,18 +155,13 @@ package ch.adolio.deactivator
 			clear();
 
 			if (_debugSprite)
-			{
-				_activeAreaDebugQuad.dispose();
-				_debugSprite.dispose();
-			}
+				destroyDebugRendering();
 
 			// Nullify references
 			_activeArea = null;
 			_activeChunks = null;
 			_linkedChunks = null;
 			_chunksX = null;
-			_activeAreaDebugQuad = null;
-			_debugSprite = null;
 		}
 
 		public function get chunkWidth():Number
@@ -184,9 +174,34 @@ package ch.adolio.deactivator
 			return _chunkHeight;
 		}
 
+		/**
+		 * Sprite holding the debug rendering, <code>null</code> while the debug rendering is disabled.
+		 */
 		public function get debugSprite():Sprite
 		{
 			return _debugSprite;
+		}
+
+		public function get isDebugRenderingEnabled():Boolean
+		{
+			return _debugSprite != null;
+		}
+
+		/**
+		 * Enables or disables the debug rendering.
+		 *
+		 * Enabling creates a new debug sprite, which must be added to the display list by the caller.
+		 * Disabling removes the debug sprite from its parent & disposes it.
+		 */
+		public function set isDebugRenderingEnabled(value:Boolean):void
+		{
+			if (value == isDebugRenderingEnabled)
+				return;
+
+			if (value)
+				createDebugRendering();
+			else
+				destroyDebugRendering();
 		}
 
 		/**
@@ -429,6 +444,46 @@ package ch.adolio.deactivator
 				_elementsWithPendingActivityChange.splice(0, dispatchedCount);
 				_isDispatchingActivityChanges = false;
 			}
+		}
+
+		/**
+		 * Creates the debug sprite & the debug quads of the active area, the existing chunks & the existing elements.
+		 *
+		 * Quads are stacked from the chunks at the bottom to the elements at the top, the active area in between.
+		 */
+		private function createDebugRendering():void
+		{
+			_debugSprite = new Sprite();
+
+			for each (var chunksY:Dictionary in _chunksX)
+			{
+				for each (var chunk:SpatialChunk in chunksY)
+					_debugSprite.addChild(chunk.createDebugQuad(this));
+			}
+
+			_activeAreaDebugQuad = new Quad(1, 1, 0xffffff);
+			_activeAreaDebugQuad.alpha = 0.3;
+			_debugSprite.addChild(_activeAreaDebugQuad);
+			updateActiveAreaDebugQuad();
+
+			for (var ei:int = 0; ei < _elements.length; ei++)
+				_elements[ei].createDebugQuad();
+		}
+
+		private function destroyDebugRendering():void
+		{
+			for each (var chunksY:Dictionary in _chunksX)
+			{
+				for each (var chunk:SpatialChunk in chunksY)
+					chunk.destroyDebugQuad();
+			}
+
+			for (var ei:int = 0; ei < _elements.length; ei++)
+				_elements[ei].destroyDebugQuad();
+
+			_debugSprite.removeFromParent(true);
+			_activeAreaDebugQuad = null;
+			_debugSprite = null;
 		}
 
 		private function updateActiveAreaDebugQuad():void

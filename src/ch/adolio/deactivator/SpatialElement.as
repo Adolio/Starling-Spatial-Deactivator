@@ -82,11 +82,7 @@ package ch.adolio.deactivator
 
 			// Create debug graphics
 			if (_deactivator.debugSprite)
-			{
-				_debugQuad = new Quad(1, 1, _isActive ? (_isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor) : (_isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor));
-				_debugQuad.alpha = _isActive ? _activeAlpha : _inactiveAlpha;
-				_deactivator.debugSprite.addChild(_debugQuad);
-			}
+				createDebugQuad();
 
 			// make sure the element is active if the deactivator is disabled
 			if (!_deactivator.isEnable)
@@ -158,9 +154,7 @@ package ch.adolio.deactivator
 			// clear new chunk list
 			_newCoveredChunks.length = 0;
 
-			// Dispose graphical debug
-			if (_debugQuad)
-				_debugQuad.removeFromParent(true);
+			destroyDebugQuad();
 
 			// Nullify references
 			_deactivator = null;
@@ -168,7 +162,6 @@ package ch.adolio.deactivator
 			_newCoveredChunks = null;
 			_coveredChunks = null;
 			_activityChangedCallback = null;
-			_debugQuad = null;
 		}
 
 		public function get isActive():Boolean
@@ -265,6 +258,26 @@ package ch.adolio.deactivator
 		// --------------------------------------------------------------------
 		// -- Private / internal methods
 		// --------------------------------------------------------------------
+
+		/**
+		 * Creates the debug quad on top of the debug sprite of the deactivator.
+		 */
+		internal function createDebugQuad():void
+		{
+			_debugQuad = new Quad(1, 1);
+			_deactivator.debugSprite.addChild(_debugQuad);
+			updateDebugAABB();
+			updateDebugFromStatus();
+		}
+
+		internal function destroyDebugQuad():void
+		{
+			if (!_debugQuad)
+				return;
+
+			_debugQuad.removeFromParent(true);
+			_debugQuad = null;
+		}
 
 		private function updateDebugAABB():void
 		{

@@ -25,6 +25,12 @@ package ch.adolio.deactivator.test
 	{
 		public function execute():void
 		{
+			testQuadsFollowContext();
+			testRuntimeToggle();
+		}
+
+		private function testQuadsFollowContext():void
+		{
 			var deactivator:SpatialDeactivator = new SpatialDeactivator(DeactivatorFactory.CHUNK_SIZE, DeactivatorFactory.CHUNK_SIZE, true);
 			deactivator.activeAreaUpdateCooldown = 0;
 			deactivator.updateActiveArea(DeactivatorFactory.createInitialActiveArea());
@@ -50,6 +56,43 @@ package ch.adolio.deactivator.test
 			Assert.equalsInt(debugSprite.numChildren, 1, "Quads after clearing");
 
 			deactivator.destroy();
+		}
+
+		private function testRuntimeToggle():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			Assert.isTrue(!deactivator.isDebugRenderingEnabled && deactivator.debugSprite == null, "Debug rendering disabled by default");
+
+			var first:ElementProbe = new ElementProbe("first element", deactivator, 5, 5, 2, 2);
+			var second:ElementProbe = new ElementProbe("second element", deactivator, 15, 5, 3, 4);
+
+			// quads are created for the existing chunks & elements, the elements on top
+			deactivator.isDebugRenderingEnabled = true;
+			var debugSprite:Sprite = deactivator.debugSprite;
+			var parent:Sprite = new Sprite();
+			parent.addChild(debugSprite);
+			Assert.isTrue(deactivator.isDebugRenderingEnabled, "Debug rendering enabled");
+			Assert.equalsInt(debugSprite.numChildren, 5, "Active area, 2 chunks & 2 elements quads after enabling");
+			assertQuadPosition(debugSprite.getChildAt(3), 5, 5, "First element quad after enabling");
+			assertQuadPosition(debugSprite.getChildAt(4), 15, 5, "Second element quad after enabling");
+
+			// quads keep following the context
+			first.moveTo(6, 7, 2, 2);
+			assertQuadPosition(debugSprite.getChildAt(3), 6, 7, "Moved element quad after enabling");
+
+			deactivator.isDebugRenderingEnabled = false;
+			Assert.isTrue(!deactivator.isDebugRenderingEnabled && deactivator.debugSprite == null, "Debug rendering disabled");
+			Assert.equalsInt(parent.numChildren, 0, "Debug sprite removed from its parent");
+
+			// the context keeps working without debug rendering
+			second.moveTo(16, 5, 3, 4);
+			first.element.destroy();
+
+			deactivator.isDebugRenderingEnabled = true;
+			Assert.equalsInt(deactivator.debugSprite.numChildren, 4, "Active area, 2 chunks & 1 element quads after enabling again");
+
+			deactivator.destroy();
+			parent.dispose();
 		}
 
 		private function assertQuadPosition(quad:DisplayObject, x:Number, y:Number, context:String):void
