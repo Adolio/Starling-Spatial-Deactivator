@@ -29,5 +29,25 @@ package ch.adolio.test
 			if (value != expected)
 				throw new Error("Value: " + value + ", expected: " + expected + ". Message: " + message);
 		}
+
+		/**
+		 * Checks that calling the block, a function without parameter, raises an error of the given class.
+		 */
+		public static function throws(errorClass:Class, block:Function, message:String):void
+		{
+			try
+			{
+				block();
+			}
+			catch (error:Error)
+			{
+				if (error is errorClass)
+					return;
+
+				throw new Error("Raised: " + error + ", expected: " + errorClass + ". Message: " + message);
+			}
+
+			throw new Error("Nothing raised, expected: " + errorClass + ". Message: " + message);
+		}
 	}
 }

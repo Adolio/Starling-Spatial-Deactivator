@@ -95,8 +95,18 @@ package ch.adolio.deactivator
 		// -- Public API
 		// --------------------------------------------------------------------
 
+		/**
+		 * Updates the bounding box of the element.
+		 *
+		 * The element is updated right away if its update cooldown is over, otherwise when the deactivator advances
+		 * time once it is over.
+		 *
+		 * @throws ArgumentError if a value is not finite or if a size is negative
+		 */
 		public function updateAABB(x:Number, y:Number, width:Number, height:Number):void
 		{
+			SpatialDeactivator.validateRectangle("AABB", x, y, width, height);
+
 			_aabb.setTo(x, y, width, height);
 			_aabbUpdated = true;
 

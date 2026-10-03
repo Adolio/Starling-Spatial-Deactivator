@@ -75,8 +75,18 @@ package ch.adolio.deactivator
 		private var _debugSprite:Sprite;
 		private var _activeAreaDebugQuad:Quad;
 
+		/**
+		 * @param chunkWidth width of a chunk, strictly positive
+		 * @param chunkHeight height of a chunk, strictly positive
+		 * @param debugRendering creates the debug sprite right away
+		 *
+		 * @throws ArgumentError if a chunk dimension is not a finite & strictly positive number
+		 */
 		public function SpatialDeactivator(chunkWidth:Number, chunkHeight:Number, debugRendering:Boolean = false)
 		{
+			if (!isFinite(chunkWidth) || !isFinite(chunkHeight) || chunkWidth <= 0 || chunkHeight <= 0)
+				throw new ArgumentError("Invalid chunk size (" + chunkWidth + " x " + chunkHeight + "): dimensions must be finite & strictly positive.");
+
 			// Setup core
 			_activeArea = new Rectangle();
 			_chunkWidth = chunkWidth;
@@ -91,8 +101,21 @@ package ch.adolio.deactivator
 		// -- Public API
 		// --------------------------------------------------------------------
 
+		/**
+		 * Updates the area in which elements must be active.
+		 *
+		 * The chunks activity is refreshed right away if the active area update cooldown is over, otherwise during
+		 * <code>advanceTime</code> once it is over.
+		 *
+		 * @throws ArgumentError if the area is <code>null</code>, has a non-finite value or a negative size
+		 */
 		public function updateActiveArea(area:Rectangle):void
 		{
+			if (area == null)
+				throw new ArgumentError("Invalid active area: null.");
+
+			validateRectangle("active area", area.x, area.y, area.width, area.height);
+
 			// Update active area
 			_activeArea.setTo(area.x, area.y, area.width, area.height);
 			_activeAreaUpdated = true;
@@ -612,6 +635,17 @@ package ch.adolio.deactivator
 			}
 
 			return output;
+		}
+
+		/**
+		 * Checks that a rectangle can be mapped to chunks.
+		 *
+		 * @throws ArgumentError if a value is not finite or if a size is negative
+		 */
+		internal static function validateRectangle(name:String, x:Number, y:Number, width:Number, height:Number):void
+		{
+			if (!isFinite(x) || !isFinite(y) || !isFinite(width) || !isFinite(height) || width < 0 || height < 0)
+				throw new ArgumentError("Invalid " + name + " (x=" + x + ", y=" + y + ", width=" + width + ", height=" + height + "): values must be finite & the size must not be negative.");
 		}
 
 		/**
