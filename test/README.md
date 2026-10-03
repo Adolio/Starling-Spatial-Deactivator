@@ -29,7 +29,7 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 
 | Test | Covered behavior |
 |------|------------------|
-| `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges, element covering chunks whose activity swaps |
+| `ActivityTest` | Elements entering & leaving the active area, active area moving, activity propagation through bridges & non-bridges, element covering chunks whose activity swaps, AABB & active area without width or height on a chunk border |
 | `LifecycleTest` | Element destroyed twice or after `clear()`, `clear()` without notification, deactivator reuse after `clear()` & destruction of an element linking chunks (bridge or not, enabled or disabled) |
 | `ValidationTest` | Rejection of invalid chunk sizes, active areas & AABBs (null, NaN, infinite or negative size) without changing the context, empty rectangles accepted |
 | `ChunksTest` | No chunk allocated for the active area, chunks freed when left, deactivated or cleared, chunk created again in the active area for bridges & non-bridges |

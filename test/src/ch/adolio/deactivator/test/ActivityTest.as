@@ -30,6 +30,8 @@ package ch.adolio.deactivator.test
 			testBridgePropagation();
 			testNonBridgeNoPropagation();
 			testSpanningElementWithChunksSwapped();
+			testEmptyAABBOnChunkBorder();
+			testEmptyActiveAreaOnChunkBorder();
 		}
 
 		private function testElementInsideActiveArea():void
@@ -123,6 +125,41 @@ package ch.adolio.deactivator.test
 
 			nonBridge.assertIsActive(true, "Covered chunks swapped");
 			nonBridge.assertNotificationsCount(1, "Covered chunks swapped");
+
+			deactivator.destroy();
+		}
+
+		private function testEmptyAABBOnChunkBorder():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+
+			// an AABB without width or height on a chunk border is in the chunk starting on this border
+			var point:ElementProbe = new ElementProbe("point", deactivator, 10, 10, 0, 0);
+			var verticalLine:ElementProbe = new ElementProbe("vertical line", deactivator, 10, 5, 0, 2);
+			var horizontalLine:ElementProbe = new ElementProbe("horizontal line", deactivator, 5, 10, 2, 0);
+			var outsidePoint:ElementProbe = new ElementProbe("outside point", deactivator, 20, 20, 0, 0);
+
+			point.assertIsActive(true, "Empty AABB on chunk border");
+			verticalLine.assertIsActive(true, "Empty AABB on chunk border");
+			horizontalLine.assertIsActive(true, "Empty AABB on chunk border");
+			outsidePoint.assertIsActive(false, "Empty AABB on chunk border");
+
+			deactivator.updateActiveArea(new Rectangle(20, 20, 20, 20));
+			point.assertIsActive(false, "Active area moved away from empty AABB");
+			outsidePoint.assertIsActive(true, "Active area moved over empty AABB");
+
+			deactivator.destroy();
+		}
+
+		private function testEmptyActiveAreaOnChunkBorder():void
+		{
+			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
+			var inside:ElementProbe = new ElementProbe("inside element", deactivator, 45, 45, 2, 2);
+			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 35, 45, 2, 2);
+
+			deactivator.updateActiveArea(new Rectangle(40, 40, 0, 0));
+			inside.assertIsActive(true, "Empty active area on chunk border");
+			outside.assertIsActive(false, "Empty active area on chunk border");
 
 			deactivator.destroy();
 		}

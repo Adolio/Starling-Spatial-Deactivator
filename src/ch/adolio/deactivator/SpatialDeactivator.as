@@ -650,6 +650,9 @@ package ch.adolio.deactivator
 
 		/**
 		 * Computes the range of chunk indices touched by the AABB, the right & bottom bounds being exclusive.
+		 *
+		 * The range is never empty: an AABB without width or height lying on a chunk border touches the chunk starting
+		 * on this border.
 		 */
 		private function computeChunksRange(aabb:Rectangle, output:Rectangle):void
 		{
@@ -657,6 +660,13 @@ package ch.adolio.deactivator
 			var xmax:int = Math.ceil(aabb.right / _chunkWidth);
 			var ymin:int = Math.floor(aabb.top / _chunkHeight);
 			var ymax:int = Math.ceil(aabb.bottom / _chunkHeight);
+
+			if (xmax <= xmin)
+				xmax = xmin + 1;
+
+			if (ymax <= ymin)
+				ymax = ymin + 1;
+
 			output.setTo(xmin, ymin, xmax - xmin, ymax - ymin);
 		}
 

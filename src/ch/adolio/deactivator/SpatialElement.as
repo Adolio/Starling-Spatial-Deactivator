@@ -46,6 +46,7 @@ package ch.adolio.deactivator
 		private var _coveredChunks:Vector.<SpatialChunk> = new Vector.<SpatialChunk>();
 
 		// Update management
+		private var _hasAABB:Boolean = false;
 		private var _aabbUpdated:Boolean = false;
 		private var _timeSinceLastUpdate:Number = Number.MAX_VALUE; // sec, make sure that the first update happens right away.
 		private var _updateCooldown:Number = 1.0 / 10.0; // sec
@@ -108,6 +109,7 @@ package ch.adolio.deactivator
 			SpatialDeactivator.validateRectangle("AABB", x, y, width, height);
 
 			_aabb.setTo(x, y, width, height);
+			_hasAABB = true;
 			_aabbUpdated = true;
 
 			// update debugging when deactivator is disabled
@@ -324,8 +326,11 @@ package ch.adolio.deactivator
 			// update debugging
 			updateDebugAABB();
 
-			// Acquire the new covered chunks
-			_deactivator.getChunksTouchedBy(_aabb, _newCoveredChunks);
+			// Acquire the new covered chunks, none as long as the element has no AABB
+			if (_hasAABB)
+				_deactivator.getChunksTouchedBy(_aabb, _newCoveredChunks);
+			else
+				_newCoveredChunks.length = 0;
 
 			// Temp variables
 			var changes:int = 0;
