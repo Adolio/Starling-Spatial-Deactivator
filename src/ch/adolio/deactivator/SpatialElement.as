@@ -11,7 +11,6 @@
 package ch.adolio.deactivator
 {
 	import flash.geom.Rectangle;
-	import starling.animation.IAnimatable;
 	import starling.display.Quad;
 
 	/**
@@ -30,7 +29,7 @@ package ch.adolio.deactivator
 	 * its context at each frame. Call the 'updateCooldown' setter to configure the cooldown time (in seconds).
 	 * Note that the default cooldown is not equals to 0.
 	 */
-	public class SpatialElement implements IAnimatable
+	public class SpatialElement
 	{
 		// covered chunks changes
 		internal static const ENTERED_CHUNK:int = 1;
@@ -252,24 +251,19 @@ package ch.adolio.deactivator
 		}
 
 		// --------------------------------------------------------------------
-		// -- Interface methods
+		// -- Private / internal methods
 		// --------------------------------------------------------------------
 
-		// Automatically called by the Spatial Deactivator
-		public function advanceTime(time:Number):void
+		/**
+		 * Applies the pending AABB update once the update cooldown is over, without dispatching activity changes.
+		 */
+		internal function advanceTime(time:Number):void
 		{
 			_timeSinceLastUpdate += time;
 
 			if (_aabbUpdated && _timeSinceLastUpdate >= _updateCooldown)
-			{
 				update();
-				_deactivator.dispatchActivityChanges();
-			}
 		}
-
-		// --------------------------------------------------------------------
-		// -- Private / internal methods
-		// --------------------------------------------------------------------
 
 		/**
 		 * Creates the debug quad on top of the debug sprite of the deactivator.

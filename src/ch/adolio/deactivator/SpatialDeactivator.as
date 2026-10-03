@@ -12,7 +12,7 @@ package ch.adolio.deactivator
 {
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
-	import starling.animation.Juggler;
+	import starling.animation.IAnimatable;
 	import starling.display.Quad;
 	import starling.display.Sprite;
 
@@ -33,7 +33,7 @@ package ch.adolio.deactivator
 	 * all the touched chunks which will result of the activation of all the elements
 	 * touched by the chunks and so on.
 	 */
-	public class SpatialDeactivator extends Juggler
+	public class SpatialDeactivator implements IAnimatable
 	{
 		// version
 		public static const VERSION:String = "0.3";
@@ -142,8 +142,6 @@ package ch.adolio.deactivator
 			// release elements before chunks, each element unregisters itself from its covered chunks & from the list
 			while (_elements.length > 0)
 				_elements[_elements.length - 1].release();
-
-			purge();
 
 			// clear chunks
 			_activeChunks.length = 0;
@@ -333,24 +331,30 @@ package ch.adolio.deactivator
 		}
 
 		// --------------------------------------------------------------------
-		// -- Overrided methods
+		// -- Interface methods
 		// --------------------------------------------------------------------
 
-		override public function advanceTime(time:Number):void
+		/**
+		 * Applies the pending updates of the active area & of the elements whose cooldown is over.
+		 *
+		 * Automatically called when the deactivator is added to a juggler.
+		 */
+		public function advanceTime(time:Number):void
 		{
-			// Do not process when not enable
-			if (!_isEnable)
+			// Do not process when not enable or destroyed
+			if (!_isEnable || !_elements)
 				return;
 
 			_activeAreaTimeSinceLastUpdate += time;
 
 			if (_activeAreaUpdated && _activeAreaTimeSinceLastUpdate >= _activeAreaUpdateCooldown)
-			{
 				refreshChunksActivity();
-				dispatchActivityChanges();
-			}
 
-			super.advanceTime(time);
+			// activity changes are only dispatched afterwards, so that no callback can change the elements while advanced
+			for (var ei:int = 0; ei < _elements.length; ei++)
+				_elements[ei].advanceTime(time);
+
+			dispatchActivityChanges();
 		}
 
 		// --------------------------------------------------------------------
@@ -466,7 +470,7 @@ package ch.adolio.deactivator
 		internal function dispatchActivityChanges():void
 		{
 			// changes queued by a callback are dispatched by the ongoing loop
-			if (_isDispatchingActivityChanges)
+			if (_isDispatchingActivityChanges || _elementsWithPendingActivityChange.length == 0)
 				return;
 
 			_isDispatchingActivityChanges = true;
@@ -589,13 +593,10 @@ package ch.adolio.deactivator
 		internal function addElement(element:SpatialElement):void
 		{
 			_elements.push(element);
-			add(element);
 		}
 
 		internal function removeElement(element:SpatialElement):void
 		{
-			remove(element);
-
 			var index:int = _elements.indexOf(element);
 			if (index != -1)
 				_elements.removeAt(index);

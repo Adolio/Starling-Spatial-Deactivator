@@ -34,6 +34,7 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 | `ValidationTest` | Rejection of invalid chunk sizes, active areas & AABBs (null, NaN, infinite or negative size) without changing the context, empty rectangles accepted |
 | `ChunksTest` | No chunk allocated for the active area, chunks freed when left, deactivated or cleared, chunk created again in the active area for bridges & non-bridges |
 | `RefreshTest` | Bridge moves which must not refresh all the chunks activity (inactive bridge, active bridge crossing chunks over the active area) & the ones which must (active bridge leaving a chunk out of the active area, or the active area) |
+| `AdvanceTimeTest` | Deactivator animatable without being a juggler, element & active area updates deferred by their cooldown until time advances (directly or through a juggler), callbacks destroying & creating elements while advancing |
 | `ReentrancyTest` | Activity callbacks destroying their own element or another one, creating elements & moving another element |
 | `CallbackTest` | Activity callback set after the element creation: while disabled, on an active or inactive element & replaced |
 | `BridgeChainTest` | Activity propagation & linked chunks along a chain of 10000 bridges, without stack overflow |
