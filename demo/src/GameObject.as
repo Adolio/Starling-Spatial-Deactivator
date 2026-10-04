@@ -36,7 +36,7 @@ package
 		private var _ih:Number = 0;
 		private var _movementRadius:Number = 0;
 		private var _angularSpeed:Number = 0;
-		private var _enableTeleportation:Boolean = false;
+		private var _isTeleportationEnabled:Boolean = false;
 		private var _teleportCooldown:Number = 0;
 		private var _isStatic:Boolean;
 
@@ -70,11 +70,49 @@ package
 			updatePosition();
 		}
 
+		/**
+		 * Destroys the game object & its spatial element.
+		 */
+		public function destroy():void
+		{
+			Starling.current.juggler.remove(this);
+			_spatialElement.destroy();
+			removeFromParent(true);
+		}
+
+		public function get isStatic():Boolean
+		{
+			return _isStatic;
+		}
+
+		public function get isTeleportationEnabled():Boolean
+		{
+			return _isTeleportationEnabled;
+		}
+
+		/**
+		 * Makes the game object jump to a random position from time to time, while active.
+		 */
+		public function set isTeleportationEnabled(value:Boolean):void
+		{
+			_isTeleportationEnabled = value;
+		}
+
+		public function get isActivityBridge():Boolean
+		{
+			return _spatialElement.isActivityBridge;
+		}
+
+		public function set isActivityBridge(value:Boolean):void
+		{
+			_spatialElement.isActivityBridge = value;
+		}
+
 		public function advanceTime(time:Number):void
 		{
 			_elapsedTime += time;
 
-			if (_enableTeleportation && _elapsedTime > _teleportCooldown)
+			if (_isTeleportationEnabled && _elapsedTime > _teleportCooldown)
 			{
 				_ix = Math.random() * Starling.current.stage.stageWidth;
 				_iy = Math.random() * Starling.current.stage.stageHeight;
