@@ -29,12 +29,12 @@ package
 		private var _quad:Quad;
 
 		// Behavior
-		private var _elaspedTime:Number = 0;
+		private var _elapsedTime:Number = 0;
 		private var _ix:Number = 0;
 		private var _iy:Number = 0;
 		private var _iw:Number = 0;
 		private var _ih:Number = 0;
-		private var _mouvementRadius:Number = 0;
+		private var _movementRadius:Number = 0;
 		private var _angularSpeed:Number = 0;
 		private var _enableTeleportation:Boolean = false;
 		private var _teleportCooldown:Number = 0;
@@ -54,9 +54,9 @@ package
 			addChild(_quad);
 
 			// Setup behavior
-			_elaspedTime = Math.random() * 1.0;
+			_elapsedTime = Math.random() * 1.0;
 			_teleportCooldown = 2 + Math.random() * 3.0;
-			_mouvementRadius = Math.random() * 100;
+			_movementRadius = Math.random() * 100;
 			_angularSpeed = ((Math.random() - 0.5) * 2) * 0.3;
 
 			// Make sure that the object is starting inactive
@@ -72,13 +72,13 @@ package
 
 		public function advanceTime(time:Number):void
 		{
-			_elaspedTime += time;
+			_elapsedTime += time;
 
-			if (_enableTeleportation && _elaspedTime > _teleportCooldown)
+			if (_enableTeleportation && _elapsedTime > _teleportCooldown)
 			{
 				_ix = Math.random() * Starling.current.stage.stageWidth;
 				_iy = Math.random() * Starling.current.stage.stageHeight;
-				_elaspedTime = 0;
+				_elapsedTime = 0;
 			}
 
 			if(!_isStatic)
@@ -87,8 +87,8 @@ package
 
 		private function updatePosition():void
 		{
-			x = _ix + Math.sin(2 * Math.PI * _elaspedTime * _angularSpeed) * _mouvementRadius;
-			y = _iy + Math.cos(2 * Math.PI * _elaspedTime * _angularSpeed) * _mouvementRadius;
+			x = _ix + Math.sin(2 * Math.PI * _elapsedTime * _angularSpeed) * _movementRadius;
+			y = _iy + Math.cos(2 * Math.PI * _elapsedTime * _angularSpeed) * _movementRadius;
 
 			_spatialElement.updateAABB(x, y, _iw, _ih);
 		}

@@ -33,14 +33,14 @@ package ch.adolio.deactivator.test
 		private function testCallbackSetWhileDisabled():void
 		{
 			var deactivator:SpatialDeactivator = DeactivatorFactory.create();
-			deactivator.isEnable = false;
+			deactivator.isEnabled = false;
 
 			var notifications:Vector.<Boolean> = new Vector.<Boolean>();
 			var element:SpatialElement = createElement(deactivator, 50, 50);
 			element.activityChangedCallback = createRecorder(notifications);
 			assertNotifications(notifications, new <Boolean>[true], "Callback set while disabled");
 
-			deactivator.isEnable = true;
+			deactivator.isEnabled = true;
 			assertNotifications(notifications, new <Boolean>[true, false], "Enabled after callback set");
 
 			deactivator.destroy();

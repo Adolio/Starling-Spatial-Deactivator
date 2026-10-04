@@ -13,7 +13,7 @@ package ch.adolio.deactivator
 	import starling.display.Quad;
 
 	/**
-	 * A spatial cell in the orthonormed spatial grid defined by the Spatial Deactivator.
+	 * A spatial cell in the regular spatial grid defined by the Spatial Deactivator.
 	 *
 	 * Used internally to separate space into areas.
 	 *

@@ -28,7 +28,7 @@ package ch.adolio.deactivator
 	 * at each frame. Call the 'activeAreaUpdateCooldown' setter to configure the cooldown time (in seconds).
 	 * Note that the default cooldown is not 0.
 	 *
-	 * The space managed by the spatial deactivator is divided into orthonormed chunks (or cells).
+	 * The space managed by the spatial deactivator is divided into a regular grid of chunks (or cells).
 	 * An element which is touching an active chunk will forward the activation to
 	 * all the touched chunks which will result of the activation of all the elements
 	 * touched by the chunks and so on.
@@ -39,7 +39,7 @@ package ch.adolio.deactivator
 		public static const VERSION:String = "0.3";
 
 		// State
-		private var _isEnable:Boolean = true;
+		private var _isEnabled:Boolean = true;
 
 		// Chunks
 		private var _chunkWidth:Number = 128;
@@ -121,7 +121,7 @@ package ch.adolio.deactivator
 			_activeAreaUpdated = true;
 
 			// update debugging when deactivator is disabled
-			if (!_isEnable)
+			if (!_isEnabled)
 				updateActiveAreaDebugQuad();
 
 			// Update chunks directly if cooldown is over
@@ -261,21 +261,39 @@ package ch.adolio.deactivator
 			_activeAreaUpdateCooldown = value;
 		}
 
-		public function get isEnable():Boolean
+		public function get isEnabled():Boolean
 		{
-			return _isEnable;
+			return _isEnabled;
 		}
 
-		public function set isEnable(value:Boolean):void
+		/**
+		 * Enables or disables the deactivation.
+		 *
+		 * While disabled, every element is active. Enabling recomputes the activity of every element from its
+		 * current AABB & from the current active area.
+		 */
+		public function set isEnabled(value:Boolean):void
 		{
-			_isEnable = value;
+			_isEnabled = value;
 
-			if (_isEnable)
+			if (_isEnabled)
 				refreshAll();
 			else
 				activateAll();
 
 			dispatchActivityChanges();
+		}
+
+		[Deprecated(replacement="isEnabled")]
+		public function get isEnable():Boolean
+		{
+			return isEnabled;
+		}
+
+		[Deprecated(replacement="isEnabled")]
+		public function set isEnable(value:Boolean):void
+		{
+			isEnabled = value;
 		}
 
 		/**
@@ -341,8 +359,8 @@ package ch.adolio.deactivator
 		 */
 		public function advanceTime(time:Number):void
 		{
-			// Do not process when not enable or destroyed
-			if (!_isEnable || !_elements)
+			// Do not process when not enabled or destroyed
+			if (!_isEnabled || !_elements)
 				return;
 
 			_activeAreaTimeSinceLastUpdate += time;
@@ -372,7 +390,7 @@ package ch.adolio.deactivator
 		 */
 		internal function refreshChunksActivity():void
 		{
-			if (!_isEnable)
+			if (!_isEnabled)
 				return;
 
 			// Reset invalidation & cooldown
@@ -548,7 +566,7 @@ package ch.adolio.deactivator
 
 			// chunks are only created for elements, so the ones over the active area, or created while disabled, must
 			// start active for the entering elements to be activated
-			if (!_isEnable || isChunkOverActiveArea(chunk))
+			if (!_isEnabled || isChunkOverActiveArea(chunk))
 				activateChunk(chunk, false);
 
 			return chunk;

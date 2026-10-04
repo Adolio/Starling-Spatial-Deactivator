@@ -115,11 +115,11 @@ package ch.adolio.deactivator.test
 			var outside:ElementProbe = new ElementProbe("outside element", deactivator, 25, 5, 2, 2);
 			var bridge:ElementProbe = new ElementProbe("bridge", deactivator, 15, 5, 10, 2);
 
-			deactivator.isEnable = false;
+			deactivator.isEnabled = false;
 			bridge.element.destroy();
 			outside.assertIsActive(true, "Linking bridge destroyed while disabled");
 
-			deactivator.isEnable = true;
+			deactivator.isEnabled = true;
 			outside.assertIsActive(false, "Enabled after linking bridge destroyed");
 
 			deactivator.destroy();

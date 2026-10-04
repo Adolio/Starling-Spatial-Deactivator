@@ -85,7 +85,7 @@ package ch.adolio.deactivator
 				createDebugQuad();
 
 			// make sure the element is active if the deactivator is disabled
-			if (!_deactivator.isEnable)
+			if (!_deactivator.isEnabled)
 				activate(false);
 
 			_deactivator.dispatchActivityChanges();
@@ -112,7 +112,7 @@ package ch.adolio.deactivator
 			_aabbUpdated = true;
 
 			// update debugging when deactivator is disabled
-			if (!_deactivator.isEnable)
+			if (!_deactivator.isEnabled)
 				updateDebugAABB();
 
 			// Update directly if cool down is over
@@ -368,7 +368,7 @@ package ch.adolio.deactivator
 		private function update():void
 		{
 			// Only update if the deactivator is active
-			if (!_deactivator.isEnable)
+			if (!_deactivator.isEnabled)
 				return;
 
 			var changes:int = updateCoveredChunks();
