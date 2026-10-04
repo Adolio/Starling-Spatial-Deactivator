@@ -13,7 +13,9 @@ package ch.adolio.deactivator.test
 	import ch.adolio.deactivator.SpatialDeactivator;
 	import ch.adolio.test.Assert;
 	import ch.adolio.test.ITest;
+	import flash.geom.Rectangle;
 	import starling.display.DisplayObject;
+	import starling.display.Quad;
 	import starling.display.Sprite;
 
 	/**
@@ -28,6 +30,7 @@ package ch.adolio.deactivator.test
 			testQuadsFollowContext();
 			testRuntimeToggle();
 			testDebugSpriteRemovedOnDestroy();
+			testElementQuadsShowActivity();
 		}
 
 		private function testQuadsFollowContext():void
@@ -108,6 +111,34 @@ package ch.adolio.deactivator.test
 			Assert.equalsInt(parent.numChildren, 0, "Debug sprite removed from its parent on destroy");
 
 			parent.dispose();
+		}
+
+		private function testElementQuadsShowActivity():void
+		{
+			var deactivator:SpatialDeactivator = new SpatialDeactivator(DeactivatorFactory.CHUNK_SIZE, DeactivatorFactory.CHUNK_SIZE, true);
+			deactivator.activeAreaUpdateCooldown = 0;
+			deactivator.updateActiveArea(DeactivatorFactory.createInitialActiveArea());
+			new ElementProbe("bridge", deactivator, 5, 5, 2, 2);
+			new ElementProbe("non-bridge", deactivator, 5, 5, 2, 2, false);
+
+			// quads above the chunk & the active area ones
+			var bridgeQuad:Quad = deactivator.debugSprite.getChildAt(2) as Quad;
+			var nonBridgeQuad:Quad = deactivator.debugSprite.getChildAt(3) as Quad;
+			var activeBridgeColor:uint = bridgeQuad.color;
+			var activeNonBridgeColor:uint = nonBridgeQuad.color;
+			var activeAlpha:Number = bridgeQuad.alpha;
+			Assert.isTrue(activeBridgeColor != activeNonBridgeColor, "Active bridge & non-bridge quads have the same color");
+			Assert.isTrue(nonBridgeQuad.alpha == activeAlpha, "Active bridge & non-bridge quads have different alphas");
+
+			deactivator.updateActiveArea(new Rectangle(40, 40, 20, 20));
+			Assert.isTrue(bridgeQuad.color != activeBridgeColor && bridgeQuad.alpha < activeAlpha, "Inactive bridge quad looks active");
+			Assert.isTrue(nonBridgeQuad.color != activeNonBridgeColor && nonBridgeQuad.alpha < activeAlpha, "Inactive non-bridge quad looks active");
+
+			deactivator.updateActiveArea(DeactivatorFactory.createInitialActiveArea());
+			Assert.isTrue(bridgeQuad.color == activeBridgeColor && bridgeQuad.alpha == activeAlpha, "Active bridge quad looks inactive");
+			Assert.isTrue(nonBridgeQuad.color == activeNonBridgeColor && nonBridgeQuad.alpha == activeAlpha, "Active non-bridge quad looks inactive");
+
+			deactivator.destroy();
 		}
 
 		private function assertQuadPosition(quad:DisplayObject, x:Number, y:Number, context:String):void

@@ -380,7 +380,7 @@ package ch.adolio.deactivator
 			if (!_isActivityBridge)
 			{
 				if (enteredChunk || leftChunk)
-					checkActivityFromCoveredChunks(false);
+					checkActivityFromCoveredChunks();
 				return;
 			}
 
@@ -410,7 +410,7 @@ package ch.adolio.deactivator
 			if (leftChunk && ((changes & LEFT_CHUNK_OUT_OF_ACTIVE_AREA) != 0 || !isCoveringActiveArea()))
 			{
 				_deactivator.refreshChunksActivity();
-				checkActivityFromCoveredChunks(false);
+				checkActivityFromCoveredChunks();
 			}
 			// The element stays active, all covered chunks must be active too
 			else if (enteredChunk)
@@ -432,7 +432,7 @@ package ch.adolio.deactivator
 		}
 
 		/** Check if element must be active according to covered chunks */
-		internal function checkActivityFromCoveredChunks(propagate:Boolean):void
+		internal function checkActivityFromCoveredChunks():void
 		{
 			var i:int;
 			if (_isActive)
@@ -442,7 +442,7 @@ package ch.adolio.deactivator
 					if (_coveredChunks[i].isActive)
 						return;
 
-				deactivate(propagate);
+				deactivate();
 			}
 			else
 			{
@@ -451,7 +451,7 @@ package ch.adolio.deactivator
 				{
 					if (_coveredChunks[i].isActive)
 					{
-						activate(propagate);
+						activate(false);
 						return;
 					}
 				}
@@ -488,13 +488,7 @@ package ch.adolio.deactivator
 				return;
 
 			_isActive = true;
-
-			// Update debug rendering
-			if (_debugQuad)
-			{
-				_debugQuad.color = _isActivityBridge ? _activeBridgeColor : _activeNonBridgeColor;
-				_debugQuad.alpha = _activeAlpha;
-			}
+			updateDebugFromStatus();
 
 			// Only propagate activity if the object is a bridge
 			if (_isActivityBridge && propagate)
@@ -506,27 +500,13 @@ package ch.adolio.deactivator
 			queueActivityChange();
 		}
 
-		internal function deactivate(propagate:Boolean):void
+		private function deactivate():void
 		{
 			if (!_isActive)
 				return;
 
 			_isActive = false;
-
-			// Update debug rendering
-			if (_debugQuad)
-			{
-				_debugQuad.color = _isActivityBridge ? _inactiveBridgeColor : _inactiveNonBridgeColor;
-				_debugQuad.alpha = _inactiveAlpha;
-			}
-
-			if (_isActivityBridge && propagate)
-			{
-				// TODO Implement deactivation check propagation
-				//for (var i:int = 0; i < _coveredChunks.length; ++i)
-				//	_coveredChunks[i].checkActivityFromCoveredElements(propagate);
-			}
-
+			updateDebugFromStatus();
 			queueActivityChange();
 		}
 

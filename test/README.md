@@ -38,5 +38,5 @@ The run prints `All N test(s) passed.` and exits with code 0, or 1 when a test f
 | `ReentrancyTest` | Activity callbacks destroying their own element or another one, creating elements & moving another element |
 | `CallbackTest` | Activity callback set after the element creation: while disabled, on an active or inactive element & replaced |
 | `BridgeChainTest` | Activity propagation & linked chunks along a chain of 10000 bridges, without stack overflow |
-| `DebugRenderingTest` | Quads of the debug sprite when elements are created, moved & destroyed, and when the deactivator is cleared; debug rendering enabled & disabled at runtime with existing chunks & elements; debug sprite removed from its parent on destroy |
+| `DebugRenderingTest` | Quads of the debug sprite when elements are created, moved & destroyed, and when the deactivator is cleared; debug rendering enabled & disabled at runtime with existing chunks & elements; debug sprite removed from its parent on destroy; element quads showing the activity |
 | `EnablingTest` | No deactivation while disabled, re-enabling after elements or the active area moved & after elements were created |

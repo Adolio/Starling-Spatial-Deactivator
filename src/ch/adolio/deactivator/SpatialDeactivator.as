@@ -294,7 +294,7 @@ package ch.adolio.deactivator
 			// the refresh only updates the elements of chunks whose activity changed, so elements left active by the
 			// disabled state in no chunk or in chunks that were never active must be checked individually
 			for (ei = 0; ei < _elements.length; ei++)
-				_elements[ei].checkActivityFromCoveredChunks(false);
+				_elements[ei].checkActivityFromCoveredChunks();
 		}
 
 		private function activateAll():void
@@ -406,7 +406,7 @@ package ch.adolio.deactivator
 				var chunk:SpatialChunk = _activeChunks[i];
 				if (chunk.linkStamp != _linkStamp)
 				{
-					chunk.deactivate(false);
+					chunk.deactivate();
 					freeChunkIfUnused(chunk);
 				}
 			}

@@ -100,7 +100,7 @@ package ch.adolio.deactivator
 				_elements[i].activate(propagate);
 		}
 
-		internal function deactivate(propagate:Boolean):void
+		internal function deactivate():void
 		{
 			if (!_isActive)
 				return;
@@ -114,7 +114,7 @@ package ch.adolio.deactivator
 			// Update touched elements
 			var elementsCount:int = _elements.length;
 			for (var i:int = 0; i < elementsCount; ++i) {
-				_elements[i].checkActivityFromCoveredChunks(propagate);
+				_elements[i].checkActivityFromCoveredChunks();
 			}
 		}
 
