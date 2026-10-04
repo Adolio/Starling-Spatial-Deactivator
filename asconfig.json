@@ -5,7 +5,7 @@
 		"source-path": [
 			"src"
 		],
-		"library-path": [
+		"external-library-path": [
 			"lib"
 		],
 		"include-sources": [
