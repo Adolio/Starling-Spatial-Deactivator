@@ -114,9 +114,10 @@ package
 			var oldx:Number = _activeArea.x;
 			var oldy:Number = _activeArea.y;
 
-			// Animate the active area
-			_activeArea.x = lerp(_activeArea.x, _activeAreaTargetX - _activeArea.width * 0.5, e.passedTime * 10);
-			_activeArea.y = lerp(_activeArea.y, _activeAreaTargetY - _activeArea.height * 0.5, e.passedTime * 10);
+			// Animate the active area, without overshooting the target on long frames
+			var t:Number = Math.min(1, e.passedTime * 10);
+			_activeArea.x = lerp(_activeArea.x, _activeAreaTargetX - _activeArea.width * 0.5, t);
+			_activeArea.y = lerp(_activeArea.y, _activeAreaTargetY - _activeArea.height * 0.5, t);
 
 			// Update active area if view changed
 			if (_activeArea.x != oldx || _activeArea.y != oldy)
