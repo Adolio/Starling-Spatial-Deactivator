@@ -111,8 +111,8 @@ package
 
 		private function onEnterFrame(e:EnterFrameEvent):void
 		{
-			var oldx:int = _activeArea.x;
-			var oldy:int = _activeArea.y;
+			var oldx:Number = _activeArea.x;
+			var oldy:Number = _activeArea.y;
 
 			// Animate the active area
 			_activeArea.x = lerp(_activeArea.x, _activeAreaTargetX - _activeArea.width * 0.5, e.passedTime * 10);
