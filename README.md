@@ -133,6 +133,21 @@ The library, the demo & the tests are built against the Starling version in ```l
 
 Just clone or download the repository and copy/paste the ```src/ch``` folder into your ```src``` directory or add the ```src/``` folder to your class path.
 
+## 🔨 How to build?
+
+The project is set up for Visual Studio Code with the ActionScript & MXML extension.
+
+The AIR SDK path set in the ```.vscode/settings.json``` files (root, ```demo``` & ```test```) is the one of the author: change ```as3mxml.sdk.framework``` to your own AIR SDK path locally, without committing it.
+
+The projects can also be built from a terminal, from the repository root:
+
+```powershell
+npx --yes asconfigc --sdk <air-sdk-path> --project asconfig.json       # library (SWC)
+npx --yes asconfigc --sdk <air-sdk-path> --project demo/asconfig.json  # demo
+```
+
+See [test/README.md](test/README.md) to build & run the tests.
+
 
 ## 💡 Important aspects
 
