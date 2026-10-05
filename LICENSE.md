@@ -1,7 +1,7 @@
 Simplified BSD License
 ======================
 
-Copyright 2017-2021 Aurélien Da Campo. All rights reserved.
+Copyright 2017-2026 Aurélien Da Campo. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
