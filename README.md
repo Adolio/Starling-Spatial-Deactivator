@@ -43,6 +43,13 @@ public function update():void
 	_deactivator.updateActiveArea(_activeAreaAABB);
 }
 
+// When unloading a level...
+public function clearLevel():void
+{
+	// Destroys the remaining spatial elements & chunks
+	_deactivator.clear();
+}
+
 public function get deactivator():SpatialDeactivator
 {
 	return _deactivator;
@@ -64,9 +71,8 @@ public function MyGameObject(gameManager:MyGameManager)
 	// The deactivator will take care of activating it right away if needed.
 	onSpatialElementActivityChanged(false);
 
-	// Create spatial element
-	_spatialElement = new SpatialElement(gameManager.deactivator);
-	_spatialElement.activityChangedCallback = onSpatialElementActivityChanged;
+	// Create spatial element (an activity bridge, see the API section)
+	_spatialElement = new SpatialElement(gameManager.deactivator, true, onSpatialElementActivityChanged);
 
 	// Initial position update
 	updatePosition();
@@ -92,13 +98,20 @@ private function onSpatialElementActivityChanged(active:Boolean):void
 	_myPhysicalBody.enable = active;
 	...
 }
+
+public function destroy():void
+{
+	// Unregisters the spatial element, without calling its callback
+	_spatialElement.destroy();
+	...
+}
 ```
 **Important notes:**
 
 - Your game objects must start inactive.
 - Update spatial elements only when AABB has changed.
 - Chunk sizes must be strictly positive. Active areas & AABBs must have finite values and a positive or null size. Invalid values raise an `ArgumentError`.
-- Activity callbacks are triggered once the deactivator is up to date, so they can safely create, destroy or move spatial elements. An activity changed & restored during the same update is not notified.
+- The rules of the activity callbacks are detailed in the API section below.
 
 ### 🐜 Enabling debug mode
 
@@ -121,6 +134,44 @@ addChild(_deactivator.debugSprite);
 
 _deactivator.isDebugRenderingEnabled = false; // removes & disposes the debug sprite
 ```
+
+## 📖 API
+
+### ```SpatialDeactivator```
+
+| Member | Description |
+|--------|-------------|
+| ```new SpatialDeactivator(chunkWidth, chunkHeight, debugRendering = false)``` | Creates a deactivator dividing the space into chunks of the given size. |
+| ```updateActiveArea(area:Rectangle)``` | Sets the area in which elements must be active, usually the camera view. Applied right away, or once ```activeAreaUpdateCooldown``` is over. |
+| ```activeAreaUpdateCooldown:Number``` | Minimum time between two active area updates, in seconds (```0.1``` by default). |
+| ```advanceTime(time:Number)``` | Applies the pending updates. Called automatically once the deactivator is added to a juggler (```IAnimatable```). |
+| ```isEnabled:Boolean``` | Enables or disables the deactivation. While disabled, every element is active. ```isEnable``` is a deprecated alias. |
+| ```updateChunksActivity()``` | Forces a refresh of the chunks activity. Does nothing while disabled. |
+| ```clear()``` | Destroys the remaining elements (without calling their callbacks) & the chunks, and resets the active area. |
+| ```destroy()``` | Clears the deactivator & releases its resources. Remove it from its juggler, it must not be used afterwards. |
+| ```isDebugRenderingEnabled:Boolean```, ```debugSprite:Sprite``` | Debug rendering, see the 🐜 section. |
+| ```chunkWidth:Number```, ```chunkHeight:Number``` | Size of the chunks (read only). |
+| ```chunksCount:int``` | Number of allocated chunks, for monitoring (read only). |
+| ```VERSION:String``` | Version of the library (static). |
+
+### ```SpatialElement```
+
+| Member | Description |
+|--------|-------------|
+| ```new SpatialElement(deactivator, isActivityBridge = true, activityChangedCallback = null)``` | Registers a new element in the deactivator. |
+| ```updateAABB(x, y, width, height)``` | Updates the bounding box of the element. Applied right away, or once ```updateCooldown``` is over. |
+| ```updateCooldown:Number``` | Minimum time between two bounding box updates, in seconds (```0.1``` by default). |
+| ```isActive:Boolean``` | Current activity of the element (read only). |
+| ```isActivityBridge:Boolean``` | Whether the element transfers its activity to all the chunks it touches. Static elements should usually not be bridges. Can be changed at any time. |
+| ```activityChangedCallback:Function``` | Callback called when the activity changes. Prototype: ```function(isActive:Boolean):void```. |
+| ```destroy()``` | Unregisters the element, without calling its callback. Safe to call more than once. |
+
+### Activity callbacks
+
+- A callback is only called when the activity has really changed: an activity changed & restored during the same update is not notified.
+- Callbacks are called once the deactivator is up to date, before the call that changed the activity returns, so they can safely create, destroy or move spatial elements.
+- A callback set after the creation of an element is called right away if the element is already active, since game objects are assumed to start inactive.
+- Callbacks are not called when an element is destroyed or when the deactivator is cleared.
 
 ## 📋 Requirements
 
