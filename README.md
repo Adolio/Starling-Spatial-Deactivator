@@ -9,11 +9,11 @@ This library could be useful for you if:
 - Your game objects could leave a defined active area (camera view for instance) and therefore they need to be deactivated.
 - Your game objects could interact with each other and you need to make sure that colliding game objects are "safely" deactivated.
 
-For further details about the implementation, please have a look at the [demo page](http://adolio.ch/projects/Starling-Spatial-Deactivator).
+For further details about how it works & why, please have a look at [How it works](doc/HOW-IT-WORKS.md).
 
-## ▶️ Live demo
+## ▶️ Demo
 
-Try it [here](http://adolio.ch/projects/Starling-Spatial-Deactivator)!
+A demo is available in the [demo](demo) folder.
 
 ## 😃 How to use it?
 
