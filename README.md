@@ -122,6 +122,13 @@ addChild(_deactivator.debugSprite);
 _deactivator.isDebugRenderingEnabled = false; // removes & disposes the debug sprite
 ```
 
+## 📋 Requirements
+
+- Starling 2 (tested with 2.7 & 2.8)
+- AIR SDK 33.1 or later (tested with 33.1 & 51.3)
+
+The library, the demo & the tests are built against the Starling version in ```lib```.
+
 ## ⌨️ How to install?
 
 Just clone or download the repository and copy/paste the ```src/ch``` folder into your ```src``` directory or add the ```src/``` folder to your class path.
