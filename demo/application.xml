@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <application xmlns="http://ns.adobe.com/air/application/33.1">
   <id>Starling-Spatial-Deactivator-Demo</id>
-  <versionLabel>0.3</versionLabel>
-  <versionNumber>0.3</versionNumber>
+  <versionLabel>0.4</versionLabel>
+  <versionNumber>0.4</versionNumber>
   <filename>Starling-Spatial-Deactivator-Demo</filename>
   <name>Starling-Spatial-Deactivator-Demo</name>
   <gpuPreference>discrete</gpuPreference>

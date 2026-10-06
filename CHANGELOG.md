@@ -1,6 +1,40 @@
 Starling-Spatial-Deactivator: Changelog
 =======================================
 
+Version 0.4 - 2026-10-06
+------------------------
+
+- Spatial Deactivator: Replaced Juggler inheritance by IAnimatable (the juggler methods are not available anymore)
+- Spatial Element: Made time advance internal (elements are not IAnimatable anymore)
+- Spatial Deactivator: Renamed isEnable to isEnabled (isEnable is kept as a deprecated alias)
+- Spatial Deactivator: Added validation of chunk sizes, active areas & AABBs (invalid values raise an ArgumentError)
+- Spatial Deactivator: Added enabling & disabling of the debug rendering at runtime (isDebugRenderingEnabled)
+- Spatial Deactivator: Added chunks count
+- Spatial Deactivator: Changed activity callbacks to be called once the context is up to date & only when the activity has really changed (callbacks can now create, destroy or move elements)
+- Spatial Deactivator: Changed clear() to destroy the remaining elements, without calling their callbacks
+- Spatial Deactivator: Made destroy() idempotent & releasing all its references
+- Spatial Element: Made destroy() idempotent
+- Spatial Deactivator: Fixed clear() leaving elements pointing at destroyed chunks
+- Spatial Deactivator: Fixed chunks & elements being deactivated while disabled
+- Spatial Deactivator: Fixed inconsistent chunks & elements activity after re-enabling
+- Spatial Deactivator: Fixed elements toggled off & on when the active chunks change
+- Spatial Deactivator: Fixed stack overflows when propagating activity along long chains of bridges
+- Spatial Deactivator: Fixed chunks never freed & stopped creating chunks for the active area
+- Spatial Deactivator: Fixed rectangles without width or height on a chunk border touching no chunk
+- Spatial Element: Fixed activity changes lost when the callback is set after the element became active
+- Spatial Element: Fixed activity not recomputed when destroying an active bridge
+- Spatial Deactivator: Improved chunks activity refresh to only visit active & linked chunks
+- Spatial Element: Reduced chunks activity refreshes when bridges cross chunks
+- Demo: Added help panel & keyboard toggles for the deactivator features
+- Demo: Fixed active area updated at each frame & overshooting its target on long frames
+- Tests: Added test project
+- Project: Stopped bundling Starling in the library SWC
+- Project: Added Starling version to its SWC name
+- Project: Removed unneeded application descriptor of the library
+- Documentation: Converted the HTML demo page into a markdown article (How it works) & removed the Flash demo
+- Documentation: Documented the requirements, the build instructions, the full API & the activity callbacks rules in the README
+- Project: Updated copyright dates
+
 Version 0.3 - 2021-10-19
 ------------------------
 

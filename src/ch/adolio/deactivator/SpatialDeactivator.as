@@ -36,7 +36,7 @@ package ch.adolio.deactivator
 	public class SpatialDeactivator implements IAnimatable
 	{
 		// version
-		public static const VERSION:String = "0.3";
+		public static const VERSION:String = "0.4";
 
 		// State
 		private var _isEnabled:Boolean = true;
